@@ -128,7 +128,9 @@ select.inp option{background:#21262d}
 .ct-Pagado    {background:#16a34a}
 .ct-Nopagado  {background:#dc2626}
 .ct-Ausente   {background:#ea580c}
-.ct-Confirmado{background:#b45309}
+.ct-Confirmado{background:#fef08a;color:#374151}
+.ct-Confirmado .ct-pac{color:#374151 !important}
+.ct-Confirmado .ct-mot{color:#4b5563 !important}
 .ct-Presente  {background:#2563eb}
 .cal-nav{display:flex;align-items:center;gap:10px}
 .cal-nav-btn{width:34px;height:34px;border-radius:8px;background:#21262d;border:1px solid #30363d;color:#c9d1d9;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:14px;transition:all .2s}
@@ -287,7 +289,7 @@ select.inp option{background:#21262d}
       <span style="display:flex;align-items:center;gap:6px"><span style="width:12px;height:12px;border-radius:3px;background:#16a34a;display:inline-block"></span>Pagado</span>
       <span style="display:flex;align-items:center;gap:6px"><span style="width:12px;height:12px;border-radius:3px;background:#dc2626;display:inline-block"></span>No pagado</span>
       <span style="display:flex;align-items:center;gap:6px"><span style="width:12px;height:12px;border-radius:3px;background:#ea580c;display:inline-block"></span>Ausente</span>
-      <span style="display:flex;align-items:center;gap:6px"><span style="width:12px;height:12px;border-radius:3px;background:#b45309;display:inline-block"></span>Confirmado</span>
+      <span style="display:flex;align-items:center;gap:6px"><span style="width:12px;height:12px;border-radius:3px;background:#fef08a;border:1px solid #ca8a04;display:inline-block"></span>Confirmado</span>
       <span style="display:flex;align-items:center;gap:6px"><span style="width:12px;height:12px;border-radius:3px;background:#2563eb;display:inline-block"></span>Presente</span>
     </div>
     <div id="calGrid" style="overflow-x:auto"></div>
@@ -299,8 +301,12 @@ select.inp option{background:#21262d}
   <div class="page-header">
     <h2><i class="bi bi-cash-stack me-2" style="color:#a78bfa"></i>Resumen de Cobros</h2>
     <div style="display:flex;align-items:center;gap:10px">
-      <div style="font-size:13px;color:#7d8590">Semana (lunes):</div>
-      <input class="inp" id="cLunes" type="text" placeholder="DD/MM/AAAA" style="width:140px" oninput="fmtFecha(this)" onchange="renderCobros()">
+      <div class="cal-nav">
+        <button class="cal-nav-btn" onclick="cobNavSem(-1)"><i class="bi bi-chevron-left"></i></button>
+        <span class="semana-rng" id="cobRng"></span>
+        <button class="cal-nav-btn" onclick="cobNavSem(1)"><i class="bi bi-chevron-right"></i></button>
+        <button class="cal-nav-btn" onclick="cobHoy()" style="font-size:11px;font-weight:800;padding:0 8px;width:auto">HOY</button>
+      </div>
       <div style="font-size:13px;color:#7d8590;margin-left:8px">Mes:</div>
       <select class="inp" id="cMes" onchange="renderCobros()" style="width:130px">
         <option value="4">Abril</option><option value="5" selected>Mayo</option>
@@ -475,9 +481,27 @@ async function apiPost(body) {
 
 async function cargarTurnos() {
   showLoading(true);
-  TURNOS = await apiGet();
+  const raw = await apiGet();
+  TURNOS = raw.map(t=>({...t, fecha: normFecha(t.fecha), hora: normHora(t.hora)}));
   showLoading(false);
   filtrar();
+}
+
+function normFecha(v){
+  if(!v) return '';
+  const s = String(v);
+  if(/^\d{2}\/\d{2}\/\d{4}$/.test(s)) return s;
+  const d = new Date(s);
+  if(!isNaN(d)) return fF(d);
+  return s;
+}
+function normHora(v){
+  if(!v) return '';
+  const s = String(v);
+  if(/^\d{1,2}:\d{2}(:\d{2})?$/.test(s)){const p=s.split(':');return p[0].padStart(2,'0')+':'+p[1];}
+  const d = new Date(s);
+  if(!isNaN(d)) return `${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
+  return s;
 }
 
 function showLoading(on) {
@@ -498,7 +522,7 @@ const EST_COL={Pagado:'#16a34a','No pagado':'#dc2626',Ausente:'#ea580c',Confirma
 const EST_CLS={Pagado:'est-Pagado','No pagado':'est-Nopagado',Ausente:'est-Ausente',Confirmado:'est-Confirmado',Presente:'est-Presente'};
 const CT_CLS ={Pagado:'ct-Pagado','No pagado':'ct-Nopagado',Ausente:'ct-Ausente',Confirmado:'ct-Confirmado',Presente:'ct-Presente'};
 
-let pg=1, PG=20, filt=[], semAct=lunDe(new Date()), mesSel=4, acIdx=-1, acM=[];
+let pg=1, PG=20, filt=[], semAct=lunDe(new Date()), cobSemAct=lunDe(new Date()), mesSel=4, acIdx=-1, acM=[];
 
 // ── Helpers fecha ──────────────────────────────────────────────────────────
 function pF(s){if(!s)return null;const p=String(s).split('/');if(p.length!==3)return null;const d=new Date(+p[2],+p[1]-1,+p[0]);return isNaN(d)?null:d}
@@ -548,8 +572,7 @@ function init(){
   const meses=[...new Set(TURNOS.map(mesKey).filter(Boolean))].sort();
   const fm=document.getElementById('fMes');
   meses.forEach(m=>{const[y,mo]=m.split('-');fm.innerHTML+=`<option value="${m}">${MESES_F[+mo-1]} ${y}</option>`});
-  // Lunes cobros hoy
-  document.getElementById('cLunes').value=fF(lunDe(new Date()));
+  // Lunes cobros: inicializado con cobSemAct (esta semana)
   // cargarTurnos() ya se llamó arriba — llama filtrar() internamente
   semHoy();
   initAnalisis();
@@ -565,6 +588,12 @@ function filtrar(){
     if(fE&&t.estado!==fE)return false;
     if(fM&&mesKey(t)!==fM)return false;
     return true;
+  });
+  filt.sort((a,b)=>{
+    const da=pF(a.fecha),db=pF(b.fecha);
+    if(!da&&!db)return 0; if(!da)return 1; if(!db)return -1;
+    const dd=db-da; if(dd!==0)return dd;
+    return (b.hora||'').localeCompare(a.hora||'');
   });
   pg=1;renderTabla();
 }
@@ -709,6 +738,8 @@ function elegir(p){
 // ═══════════════════════════════════════════════════════════════════════════
 function semHoy(){semAct=lunDe(new Date());renderSemana()}
 function semNav(d){semAct=new Date(semAct);semAct.setDate(semAct.getDate()+d*7);renderSemana()}
+function cobHoy(){cobSemAct=lunDe(new Date());renderCobros()}
+function cobNavSem(d){cobSemAct=new Date(cobSemAct);cobSemAct.setDate(cobSemAct.getDate()+d*7);renderCobros()}
 function renderSemana(){
   const dias=Array.from({length:6},(_,i)=>{const d=new Date(semAct);d.setDate(d.getDate()+i);return d});
   const lun=dias[0],sab=dias[5];
@@ -782,16 +813,17 @@ function verDet(i){
 // COBROS
 // ═══════════════════════════════════════════════════════════════════════════
 function renderCobros(){
-  const lunesStr=document.getElementById('cLunes').value;
   const mes=parseInt(document.getElementById('cMes').value);
   const anio=parseInt(document.getElementById('cAnio').value);
-  const lunes=pF(lunesStr);
+  const lunes=cobSemAct;
+  // Actualizar display de rango
+  const sabD=new Date(lunes);sabD.setDate(sabD.getDate()+5);
+  const rngEl=document.getElementById('cobRng');
+  if(rngEl)rngEl.textContent=`${lunes.getDate()} ${MESES_C[lunes.getMonth()]} — ${sabD.getDate()} ${MESES_C[sabD.getMonth()]} ${sabD.getFullYear()}`;
   // Semanal
   let tSem=[],tMes=TURNOS.filter(t=>{const d=pF(t.fecha);return d&&d.getMonth()+1===mes&&d.getFullYear()===anio});
-  if(lunes){
-    const sab=new Date(lunes);sab.setDate(sab.getDate()+5);
-    tSem=TURNOS.filter(t=>{const d=pF(t.fecha);return d&&d>=lunes&&d<=sab});
-  }
+  const sab=new Date(lunes);sab.setDate(sab.getDate()+5);
+  tSem=TURNOS.filter(t=>{const d=pF(t.fecha);return d&&d>=lunes&&d<=sab});
   const sem=(arr,est,campo)=>arr.filter(t=>!est||t.estado===est).reduce((s,t)=>s+(campo==='monto'?(+t.monto||0):1),0);
   const sMon=t=>t.filter(t=>t.estado==='Pagado').reduce((s,t)=>s+(+t.monto||0),0);
   const sPend=t=>t.filter(t=>t.estado==='No pagado').reduce((s,t)=>s+(+t.monto||0),0);
@@ -801,19 +833,17 @@ function renderCobros(){
   // Detalle días semana
   const DNOM=['Lunes','Martes','Miércoles','Jueves','Viernes','Sábado'];
   let diasHTML='';
-  if(lunes){
-    for(let i=0;i<6;i++){
-      const d=new Date(lunes);d.setDate(d.getDate()+i);
-      const tD=TURNOS.filter(t=>mismaF(pF(t.fecha),d));
-      const cobD=sMon(tD);
-      diasHTML+=`<div class="cobros-dia-row"><span>${DNOM[i]} ${d.getDate()}/${d.getMonth()+1}</span><span class="dvl">${cobD?fmt$(cobD):'—'}</span></div>`;
-    }
-  } else {diasHTML='<div style="color:#484f58;font-size:13px">Ingresá el lunes para ver el detalle diario</div>'}
+  for(let i=0;i<6;i++){
+    const d=new Date(lunes);d.setDate(d.getDate()+i);
+    const tD=TURNOS.filter(t=>mismaF(pF(t.fecha),d));
+    const cobD=sMon(tD);
+    diasHTML+=`<div class="cobros-dia-row"><span>${DNOM[i]} ${d.getDate()}/${d.getMonth()+1}</span><span class="dvl">${cobD?fmt$(cobD):'—'}</span></div>`;
+  }
   document.getElementById('cobrosGrid').innerHTML=`
     <div>
       <div class="cobros-section">
         <h4><i class="bi bi-calendar-week" style="color:#a78bfa"></i>Resumen Semanal</h4>
-        ${lunes?`
+        ${`
         <div class="cobros-row"><span class="lbl">💰 Total cobrado</span><span class="val verde">${fmt$(sMon(tSem))}</span></div>
         <div class="cobros-row"><span class="lbl">✅ Turnos pagados</span><span class="val">${sem(tSem,'Pagado','cnt')}</span></div>
         <div class="cobros-row"><span class="lbl">❌ No pagados</span><span class="val">${sem(tSem,'No pagado','cnt')}</span></div>
@@ -824,7 +854,7 @@ function renderCobros(){
         <div style="border-top:1px solid #30363d;margin-top:14px;padding-top:12px">
           <div style="font-size:11.5px;font-weight:700;color:#484f58;text-transform:uppercase;letter-spacing:.07em;margin-bottom:8px">Detalle por día</div>
           ${diasHTML}
-        </div>`:'<div style="color:#484f58;padding:16px 0">Ingresá el lunes de la semana arriba</div>'}
+        </div>`}
       </div>
     </div>
     <div>
