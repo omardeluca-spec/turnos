@@ -641,12 +641,14 @@ function renderTabla(){
 function goP(p){pg=p;renderTabla()}
 
 // ── Modal ────────────────────────────────────────────────────────────────────
-function openModal(t=null,idx=-1){
-  document.getElementById('eIdx').value = (idx !== undefined && idx !== null) ? idx : -1;
-  document.getElementById('modalTit').innerHTML=idx>=0?'<i class="bi bi-pencil-fill me-2" style="color:#a78bfa"></i>Editar turno':'<i class="bi bi-calendar-plus me-2" style="color:#a78bfa"></i>Nuevo turno';
+function openModal(t=null,rowId=null){
+  // rowId es el número de fila en la planilla (string "2","3"...) o null para nuevo
+  document.getElementById('eIdx').value = rowId !== null ? String(rowId) : '-1';
+  const esEdicion = rowId !== null;
+  document.getElementById('modalTit').innerHTML=esEdicion?'<i class="bi bi-pencil-fill me-2" style="color:#a78bfa"></i>Editar turno':'<i class="bi bi-calendar-plus me-2" style="color:#a78bfa"></i>Nuevo turno';
   const hoy=new Date();
   document.getElementById('mFe').value=t?t.fecha:fF(hoy);
-  document.getElementById('mHo').value=t?t.hora:'';
+  document.getElementById('mHo').value=t?normHora(t.hora):'';
   document.getElementById('mPa').value=t?t.pac:'';
   document.getElementById('mTe').value=t?t.tel:'';
   document.getElementById('mMo').value=t?t.monto:'';
@@ -656,7 +658,16 @@ function openModal(t=null,idx=-1){
   document.getElementById('modalOverlay').classList.add('open');
 }
 function closeModal(){document.getElementById('modalOverlay').classList.remove('open')}
-function editT(i){openModal(TURNOS[i], TURNOS[i].id || i)}
+function editT(i){
+  const t = TURNOS[i];
+  // t.id viene de la API como número de fila (ej: "2", "15")
+  const rowId = (t.id !== undefined && t.id !== null && t.id !== '') ? String(t.id) : null;
+  if(!rowId){
+    toast('Este turno no tiene ID de fila. Recargá la página e intentá de nuevo.','warn');
+    return;
+  }
+  openModal(t, rowId);
+}
 async function delT(i){
   const t=TURNOS[i];
   if(!confirm(`¿Eliminar el turno de ${t.pac} (${t.fecha} ${t.hora})?`))return;
@@ -691,8 +702,8 @@ async function guardar(){
   closeModal();
   showLoading(true);
   if(eId && eId!=='-1'){
-    // Editar: el eIdx ahora guarda el ID del turno
-    const res=await apiPost({action:'updateTurno',id:eId,turno:nu});
+    // Editar: enviamos action, id de fila y los datos del turno
+    const res=await apiPost({action:'updateTurno',id:String(eId),turno:nu});
     if(res.ok){toast('Turno actualizado ✓','ok')}
     else{toast('Error al actualizar: '+(res.error||''),'warn')}
   } else {
