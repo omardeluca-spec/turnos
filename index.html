@@ -497,10 +497,14 @@ function normFecha(v){
 }
 function normHora(v){
   if(!v) return '';
-  const s = String(v);
-  if(/^\d{1,2}:\d{2}(:\d{2})?$/.test(s)){const p=s.split(':');return p[0].padStart(2,'0')+':'+p[1];}
-  const d = new Date(s);
-  if(!isNaN(d)) return `${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
+  const s = String(v).trim();
+  // Ya está en formato H:MM o HH:MM (con o sin segundos)
+  const simple = s.match(/^(\d{1,2}):(\d{2})/);
+  if(simple) return simple[1].padStart(2,'0')+':'+simple[2];
+  // Extraer HH:MM de un string de fecha completa tipo "Sat Dec 30 1899 08:30:00 GMT-0416"
+  // Usamos regex para evitar problemas de zona horaria con new Date()
+  const timeMatch = s.match(/\b(\d{1,2}):(\d{2}):\d{2}\b/);
+  if(timeMatch) return timeMatch[1].padStart(2,'0')+':'+timeMatch[2];
   return s;
 }
 
@@ -665,9 +669,11 @@ async function delT(i){
 function selV(id,v){const s=document.getElementById(id);for(let i=0;i<s.options.length;i++)if(s.options[i].value===v){s.selectedIndex=i;return}; s.selectedIndex=0}
 function setEst(e){
   document.getElementById('mEs').value=e;
+  // Generar el nombre de clase: "No pagado" → "chip-Nopagado", "Pagado" → "chip-Pagado"
+  const cls='chip-'+e.replace(/\s+/g,'');
   document.querySelectorAll('.chip').forEach(c=>{
     c.classList.remove('sel');
-    if(c.textContent.toLowerCase().includes(e.split(' ').pop().toLowerCase()))c.classList.add('sel');
+    if(c.classList.contains(cls))c.classList.add('sel');
   });
 }
 async function guardar(){
@@ -773,7 +779,7 @@ function renderSemana(){
         html+=`<div class="cal-slot" style="padding:0"><div class="cal-turno ${cls}" onclick="verDet(${idx})">
           <div class="ct-pac">${t.pac}</div>
           ${t.motivo?`<div class="ct-mot">${t.motivo}</div>`:''}
-          ${t.monto?`<div style="font-size:11px;color:rgb(45 38 129 / 75%);margin-top:3px">${fmt$(t.monto)}</div>`:''}
+          ${t.monto?`<div style="font-size:11px;color:rgba(255,255,255,.75);margin-top:3px">${fmt$(t.monto)}</div>`:''}
         </div></div>`;
       } else {
         html+=`<div class="cal-slot"></div>`;
