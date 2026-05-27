@@ -1,0 +1,946 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ser y Sentir Consultoría</title>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/css/bootstrap.min.css" rel="stylesheet">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Inter',system-ui,sans-serif;background:#0d1117;color:#e6edf3;font-size:15px;display:flex;min-height:100vh;overflow-x:hidden}
+
+/* ── SIDEBAR ─────────────────────────────────────────────────────────────── */
+#sidebar{width:220px;min-width:220px;background:#161b22;border-right:1px solid #30363d;display:flex;flex-direction:column;position:fixed;top:0;left:0;height:100vh;z-index:100;transition:transform .3s}
+.sidebar-logo{padding:22px 20px 14px;border-bottom:1px solid #30363d}
+.sidebar-logo h1{font-size:17px;font-weight:800;color:#f0f6fc;letter-spacing:-.3px;display:flex;align-items:center;gap:9px}
+.sidebar-logo h1 i{color:#7c3aed;font-size:18px}
+.sidebar-logo p{font-size:11.5px;color:#7d8590;margin-top:3px;padding-left:27px}
+.sidebar-nav{flex:1;padding:12px 0;overflow-y:auto}
+.nav-item{display:flex;align-items:center;gap:12px;padding:11px 20px;cursor:pointer;font-size:14.5px;font-weight:500;color:#7d8590;transition:all .18s;border-left:3px solid transparent;text-decoration:none}
+.nav-item:hover{color:#e6edf3;background:rgba(255,255,255,.04);border-left-color:#30363d}
+.nav-item.active{color:#f0f6fc;background:rgba(124,58,237,.12);border-left-color:#7c3aed;font-weight:600}
+.nav-item i{font-size:16px;width:18px;text-align:center}
+.nav-item.active i{color:#a78bfa}
+.nav-section{font-size:10px;font-weight:700;color:#484f58;text-transform:uppercase;letter-spacing:.1em;padding:16px 20px 6px}
+.sidebar-footer{padding:16px 20px;border-top:1px solid #30363d;font-size:12px;color:#484f58}
+
+/* ── MAIN ────────────────────────────────────────────────────────────────── */
+#main{margin-left:220px;flex:1;min-height:100vh;padding:0}
+.page-header{padding:24px 28px 16px;border-bottom:1px solid #21262d;background:#0d1117;position:sticky;top:0;z-index:50;display:flex;align-items:center;justify-content:space-between;gap:12px}
+.page-header h2{font-size:20px;font-weight:700;color:#f0f6fc;margin:0}
+.page-content{padding:24px 28px}
+
+/* ── CARDS / WIDGETS ─────────────────────────────────────────────────────── */
+.stat-card{background:#161b22;border:1px solid #30363d;border-radius:12px;padding:20px;transition:border-color .2s}
+.stat-card:hover{border-color:#7c3aed}
+.stat-icon{width:40px;height:40px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:16px;margin-bottom:12px}
+.stat-val{font-size:26px;font-weight:800;color:#f0f6fc;line-height:1;margin-bottom:4px;letter-spacing:-.5px}
+.stat-lbl{font-size:12.5px;color:#7d8590;font-weight:500}
+.glass{background:#161b22;border:1px solid #30363d;border-radius:12px}
+
+/* ── TABLA ───────────────────────────────────────────────────────────────── */
+.table-wrap{background:#161b22;border:1px solid #30363d;border-radius:12px;overflow:hidden}
+table{width:100%;border-collapse:collapse}
+thead th{background:#21262d;color:#7d8590;font-size:11.5px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;padding:12px 14px;border-bottom:1px solid #30363d;white-space:nowrap}
+tbody tr{border-bottom:1px solid #21262d;transition:background .12s}
+tbody tr:hover{background:rgba(124,58,237,.06)}
+tbody td{padding:11px 14px;font-size:14px;color:#c9d1d9;vertical-align:middle}
+tbody tr:last-child{border-bottom:none}
+
+/* ── BADGES ESTADO (sólido con letras blancas) ───────────────────────────── */
+.badge-est{display:inline-flex;align-items:center;padding:4px 11px;border-radius:6px;font-size:12.5px;font-weight:700;white-space:nowrap;color:#fff}
+.est-Pagado    {background:#16a34a}
+.est-Nopagado  {background:#dc2626}
+.est-Ausente   {background:#ea580c}
+.est-Confirmado{background:#b45309}
+.est-Presente  {background:#2563eb}
+
+/* ── INPUTS ──────────────────────────────────────────────────────────────── */
+.inp{background:#21262d;border:1px solid #30363d;border-radius:8px;padding:9px 13px;color:#e6edf3;font-size:14px;font-family:'Inter',sans-serif;outline:none;transition:border-color .2s;width:100%}
+.inp:focus{border-color:#7c3aed;box-shadow:0 0 0 3px rgba(124,58,237,.15)}
+.inp::placeholder{color:#484f58}
+select.inp option{background:#21262d}
+
+/* ── BOTONES ─────────────────────────────────────────────────────────────── */
+.btn-primary{background:#7c3aed;border:none;border-radius:8px;padding:9px 18px;color:#fff;font-weight:700;font-size:14px;cursor:pointer;display:inline-flex;align-items:center;gap:7px;transition:all .2s;font-family:'Inter',sans-serif}
+.btn-primary:hover{background:#6d28d9;transform:translateY(-1px)}
+.btn-sm{padding:5px 10px;border-radius:6px;font-size:12.5px;cursor:pointer;border:none;font-family:'Inter',sans-serif;font-weight:600;transition:all .15s;display:inline-flex;align-items:center;gap:4px}
+.btn-ghost{background:rgba(255,255,255,.06);color:#c9d1d9;border:1px solid #30363d}
+.btn-ghost:hover{background:rgba(255,255,255,.1)}
+.btn-danger{background:rgba(220,38,38,.15);color:#f87171;border:1px solid rgba(220,38,38,.25)}
+.btn-danger:hover{background:rgba(220,38,38,.25)}
+.btn-wa{background:rgba(37,211,102,.15);color:#25d366;border:1px solid rgba(37,211,102,.25)}
+.btn-wa:hover{background:rgba(37,211,102,.25)}
+
+/* ── MODAL ───────────────────────────────────────────────────────────────── */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:1000;display:none;align-items:center;justify-content:center}
+.modal-overlay.open{display:flex}
+.modal-box{background:#161b22;border:1px solid #30363d;border-radius:16px;width:520px;max-width:95vw;max-height:90vh;overflow-y:auto}
+.modal-head{padding:20px 24px 16px;border-bottom:1px solid #30363d;display:flex;align-items:center;justify-content:space-between}
+.modal-head h3{font-size:16px;font-weight:700;color:#f0f6fc}
+.modal-body{padding:22px 24px}
+.modal-foot{padding:16px 24px;border-top:1px solid #30363d;display:flex;justify-content:flex-end;gap:10px}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.form-group{display:flex;flex-direction:column;gap:5px}
+.form-label{font-size:11.5px;font-weight:700;color:#a78bfa;text-transform:uppercase;letter-spacing:.07em}
+.full{grid-column:1/-1}
+
+/* ── ESTADO CHIPS MODAL ──────────────────────────────────────────────────── */
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{padding:6px 13px;border-radius:6px;font-size:13px;font-weight:700;cursor:pointer;border:2px solid transparent;transition:all .15s;color:rgba(255,255,255,.6)}
+.chip:hover{color:#fff}
+.chip.sel{color:#fff;border-color:currentColor}
+.chip-Confirmado{background:rgba(180,83,9,.15);color:#fbbf24}.chip-Confirmado.sel{background:#b45309;color:#fff;border-color:#b45309}
+.chip-Presente{background:rgba(37,99,235,.15);color:#60a5fa}.chip-Presente.sel{background:#2563eb;color:#fff;border-color:#2563eb}
+.chip-Pagado{background:rgba(22,163,74,.15);color:#4ade80}.chip-Pagado.sel{background:#16a34a;color:#fff;border-color:#16a34a}
+.chip-Nopagado{background:rgba(220,38,38,.15);color:#f87171}.chip-Nopagado.sel{background:#dc2626;color:#fff;border-color:#dc2626}
+.chip-Ausente{background:rgba(234,88,12,.15);color:#fb923c}.chip-Ausente.sel{background:#ea580c;color:#fff;border-color:#ea580c}
+
+/* ── AUTOCOMPLETE ────────────────────────────────────────────────────────── */
+.ac-wrap{position:relative}
+.ac-list{position:absolute;top:100%;left:0;right:0;z-index:9999;background:#21262d;border:1px solid #7c3aed;border-top:none;border-radius:0 0 8px 8px;max-height:180px;overflow-y:auto;display:none;box-shadow:0 8px 24px rgba(0,0,0,.5)}
+.ac-item{padding:9px 13px;cursor:pointer;font-size:13.5px;border-bottom:1px solid #30363d;transition:background .1s}
+.ac-item:hover,.ac-item.asel{background:rgba(124,58,237,.2)}
+.ac-item strong{color:#f0f6fc;display:block}
+.ac-item small{color:#7d8590;font-size:12px}
+
+/* ── PAGINACIÓN ──────────────────────────────────────────────────────────── */
+.pag-btn{width:32px;height:32px;border-radius:6px;display:inline-flex;align-items:center;justify-content:center;cursor:pointer;font-size:13px;border:1px solid #30363d;background:rgba(255,255,255,.03);color:#7d8590;transition:all .15s}
+.pag-btn.active{background:#7c3aed;border-color:#7c3aed;color:#fff}
+.pag-btn:hover:not(.active){border-color:#7c3aed;color:#e6edf3}
+
+/* ── CALENDARIO ──────────────────────────────────────────────────────────── */
+.cal-grid{display:grid;grid-template-columns:72px repeat(6,1fr);gap:2px}
+.cal-hora-hdr{background:transparent}
+.cal-dia-hdr{background:#21262d;border-radius:8px;padding:10px 8px;text-align:center}
+.cal-dia-hdr .dia-nom{font-size:11px;font-weight:700;color:#7d8590;text-transform:uppercase;letter-spacing:.07em}
+.cal-dia-hdr .dia-num{font-size:22px;font-weight:800;color:#f0f6fc;line-height:1.1}
+.cal-dia-hdr.today .dia-num{color:#a78bfa}
+.cal-dia-hdr.today{background:rgba(124,58,237,.12);border:1px solid rgba(124,58,237,.3)}
+.cal-slot{min-height:54px;border-radius:6px;background:#161b22;border:1px solid #21262d;position:relative;transition:all .15s}
+.cal-hora-lbl{display:flex;align-items:center;justify-content:flex-end;padding-right:10px;font-size:11.5px;font-weight:600;color:#484f58;font-variant-numeric:tabular-nums}
+.cal-turno{border-radius:6px;padding:8px 10px;cursor:pointer;height:100%;position:relative;overflow:hidden;transition:filter .15s}
+.cal-turno:hover{filter:brightness(1.12)}
+.cal-turno .ct-pac{font-size:13px;font-weight:700;color:#fff;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cal-turno .ct-mot{font-size:11.5px;color:rgba(255,255,255,.8);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ct-Pagado    {background:#16a34a}
+.ct-Nopagado  {background:#dc2626}
+.ct-Ausente   {background:#ea580c}
+.ct-Confirmado{background:#b45309}
+.ct-Presente  {background:#2563eb}
+.cal-nav{display:flex;align-items:center;gap:10px}
+.cal-nav-btn{width:34px;height:34px;border-radius:8px;background:#21262d;border:1px solid #30363d;color:#c9d1d9;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:14px;transition:all .2s}
+.cal-nav-btn:hover{background:#7c3aed;border-color:#7c3aed;color:#fff}
+.semana-rng{font-size:15px;font-weight:700;color:#f0f6fc}
+
+/* ── COBROS ──────────────────────────────────────────────────────────────── */
+.cobros-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+.cobros-section{background:#161b22;border:1px solid #30363d;border-radius:12px;padding:22px}
+.cobros-section h4{font-size:13px;font-weight:700;color:#7d8590;text-transform:uppercase;letter-spacing:.08em;margin-bottom:16px;display:flex;align-items:center;gap:8px}
+.cobros-row{display:flex;justify-content:space-between;align-items:center;padding:9px 0;border-bottom:1px solid #21262d;font-size:14px}
+.cobros-row:last-child{border-bottom:none}
+.cobros-row .lbl{color:#8b949e}
+.cobros-row .val{font-weight:700;color:#f0f6fc;font-size:15px}
+.cobros-row .val.verde{color:#4ade80}
+.cobros-row .val.rojo{color:#f87171}
+.cobros-row .val.naranja{color:#fb923c}
+.cobros-dia-row{display:flex;justify-content:space-between;font-size:13.5px;padding:5px 0;color:#8b949e}
+.cobros-dia-row .dvl{color:#f0f6fc;font-weight:600}
+
+/* ── ANÁLISIS TABLA MENSUAL ──────────────────────────────────────────────── */
+.analisis-table{width:100%;border-collapse:collapse;font-size:13px}
+.analisis-table th{padding:9px 12px;background:#21262d;color:#7d8590;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;text-align:center;border:1px solid #30363d;white-space:nowrap}
+.analisis-table th:first-child{text-align:left}
+.analisis-table td{padding:8px 12px;border:1px solid #21262d;color:#c9d1d9;text-align:right;white-space:nowrap}
+.analisis-table td:first-child{text-align:left;color:#8b949e;font-weight:500}
+.analisis-table tr:hover td{background:rgba(124,58,237,.06)}
+.analisis-table .total-row td{background:#21262d;font-weight:800;color:#f0f6fc}
+.analisis-table .highlight{color:#4ade80;font-weight:700}
+.mes-tab{padding:5px 12px;border-radius:6px;font-size:12.5px;font-weight:600;cursor:pointer;transition:all .15s;border:1px solid #30363d;background:rgba(255,255,255,.03);color:#7d8590}
+.mes-tab.active,.mes-tab:hover{background:#7c3aed;border-color:#7c3aed;color:#fff}
+.bar-chart{display:flex;align-items:flex-end;gap:4px;height:120px}
+.bar{flex:1;border-radius:5px 5px 0 0;position:relative;cursor:pointer;transition:filter .15s;min-width:0}
+.bar:hover{filter:brightness(1.15)}
+.bar-tt{position:absolute;bottom:105%;left:50%;transform:translateX(-50%);background:#21262d;border:1px solid #30363d;border-radius:6px;padding:4px 8px;font-size:11px;white-space:nowrap;pointer-events:none;opacity:0;transition:opacity .15s;z-index:5;color:#f0f6fc}
+.bar:hover .bar-tt{opacity:1}
+
+/* ── TOAST ───────────────────────────────────────────────────────────────── */
+#toasts{position:fixed;top:16px;right:20px;z-index:9999;display:flex;flex-direction:column;gap:8px}
+.toast{background:#21262d;border:1px solid #30363d;border-radius:10px;padding:12px 16px;color:#e6edf3;font-size:14px;display:flex;align-items:center;gap:10px;box-shadow:0 4px 20px rgba(0,0,0,.4);animation:tIn .25s ease;min-width:220px}
+@keyframes tIn{from{opacity:0;transform:translateX(20px)}to{opacity:1;transform:none}}
+
+/* ── SECCIONES ───────────────────────────────────────────────────────────── */
+.sec{display:none}.sec.on{display:block}
+
+/* ── DETAIL POPUP ────────────────────────────────────────────────────────── */
+.detail-pop{background:#1c2128;border:1px solid #30363d;border-radius:12px;padding:20px;max-width:340px}
+.detail-pop h4{font-size:16px;font-weight:700;color:#f0f6fc;margin-bottom:4px}
+.detail-row{display:flex;gap:8px;font-size:13.5px;padding:4px 0}
+.detail-row .dk{color:#7d8590;min-width:80px}
+.detail-row .dv{color:#e6edf3;font-weight:500}
+
+/* ── SCROLLBAR ───────────────────────────────────────────────────────────── */
+::-webkit-scrollbar{width:5px;height:5px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:#30363d;border-radius:10px}
+::-webkit-scrollbar-thumb:hover{background:#7c3aed}
+</style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<nav id="sidebar">
+  <div class="sidebar-logo">
+    <h1><i class="bi bi-heart-pulse-fill"></i>Ser y Sentir</h1>
+    <p>Consultoría</p>
+  </div>
+  <div class="sidebar-nav">
+    <div class="nav-section">Gestión</div>
+    <a class="nav-item active" onclick="goTo('turnos')">
+      <i class="bi bi-calendar3"></i> Turnos
+    </a>
+    <a class="nav-item" onclick="goTo('semana')">
+      <i class="bi bi-grid-3x3-gap"></i> Semana
+    </a>
+    <a class="nav-item" onclick="goTo('cobros')">
+      <i class="bi bi-cash-stack"></i> Cobros
+    </a>
+    <div class="nav-section">Reportes</div>
+    <a class="nav-item" onclick="goTo('analisis')">
+      <i class="bi bi-bar-chart-line"></i> Análisis
+    </a>
+  </div>
+  <div id="loadingBar" style="display:none;padding:8px 20px">
+  <div style="height:3px;background:#30363d;border-radius:2px;overflow:hidden">
+    <div style="height:100%;background:#7c3aed;border-radius:2px;animation:loadAnim 1.5s ease-in-out infinite" id="loadBar"></div>
+  </div>
+  <div style="font-size:11px;color:#7d8590;margin-top:4px;text-align:center">Sincronizando...</div>
+</div>
+<style>
+@keyframes loadAnim{0%{width:0%;margin-left:0}50%{width:70%;margin-left:15%}100%{width:0%;margin-left:100%}}
+</style>
+<div class="sidebar-footer">
+    <div style="color:#7d8590">Ser y Sentir Consultoría</div>
+    <div style="margin-top:2px;color:#484f58">v2.0</div>
+  </div>
+</nav>
+
+<!-- MAIN -->
+<div id="main">
+
+<!-- ═══════════════ TURNOS ═══════════════════════════════════════════════ -->
+<div class="sec on" id="sec-turnos">
+  <div class="page-header">
+    <h2><i class="bi bi-calendar3 me-2" style="color:#a78bfa"></i>Turnos</h2>
+    <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+      <input class="inp" id="srch" placeholder="🔍  Buscar paciente..." style="width:220px" oninput="filtrar()">
+      <select class="inp" id="fEst" onchange="filtrar()" style="width:150px">
+        <option value="">Todos los estados</option>
+        <option>Pagado</option><option>No pagado</option>
+        <option>Ausente</option><option>Confirmado</option><option>Presente</option>
+      </select>
+      <select class="inp" id="fMes" onchange="filtrar()" style="width:160px">
+        <option value="">Todos los meses</option>
+      </select>
+      <button class="btn-primary" onclick="openModal()"><i class="bi bi-plus-lg"></i> Nuevo turno</button>
+      <button onclick="cargarTurnos()" style="background:#21262d;border:1px solid #30363d;border-radius:8px;padding:9px 14px;color:#8b949e;cursor:pointer;font-size:13px;display:inline-flex;align-items:center;gap:6px;font-family:'Inter',sans-serif" title="Actualizar datos"><i class="bi bi-arrow-clockwise"></i></button>
+    </div>
+  </div>
+  <div class="page-content">
+    <div class="table-wrap">
+      <div style="overflow-x:auto">
+        <table id="tbl">
+          <thead>
+            <tr>
+              <th>Fecha</th><th>Hora</th><th>Paciente</th><th>Motivo</th>
+              <th>Monto</th><th>Método</th><th>Estado</th><th>Observación</th>
+              <th style="text-align:center">WA</th><th></th>
+            </tr>
+          </thead>
+          <tbody id="tbody"></tbody>
+        </table>
+      </div>
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border-top:1px solid #21262d">
+        <span style="font-size:13px;color:#7d8590" id="pgInfo"></span>
+        <div id="pgBtns" style="display:flex;gap:4px"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════ SEMANA ════════════════════════════════════════════════ -->
+<div class="sec" id="sec-semana">
+  <div class="page-header">
+    <h2><i class="bi bi-grid-3x3-gap me-2" style="color:#a78bfa"></i>Calendario Semanal</h2>
+    <div class="cal-nav">
+      <button class="cal-nav-btn" onclick="semNav(-1)"><i class="bi bi-chevron-left"></i></button>
+      <span class="semana-rng" id="semRng"></span>
+      <button class="cal-nav-btn" onclick="semNav(1)"><i class="bi bi-chevron-right"></i></button>
+      <button class="cal-nav-btn" onclick="semHoy()" style="font-size:11px;font-weight:800;padding:0 8px;width:auto">HOY</button>
+    </div>
+  </div>
+  <div class="page-content">
+    <!-- Leyenda -->
+    <div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:16px;font-size:13px">
+      <span style="display:flex;align-items:center;gap:6px"><span style="width:12px;height:12px;border-radius:3px;background:#16a34a;display:inline-block"></span>Pagado</span>
+      <span style="display:flex;align-items:center;gap:6px"><span style="width:12px;height:12px;border-radius:3px;background:#dc2626;display:inline-block"></span>No pagado</span>
+      <span style="display:flex;align-items:center;gap:6px"><span style="width:12px;height:12px;border-radius:3px;background:#ea580c;display:inline-block"></span>Ausente</span>
+      <span style="display:flex;align-items:center;gap:6px"><span style="width:12px;height:12px;border-radius:3px;background:#b45309;display:inline-block"></span>Confirmado</span>
+      <span style="display:flex;align-items:center;gap:6px"><span style="width:12px;height:12px;border-radius:3px;background:#2563eb;display:inline-block"></span>Presente</span>
+    </div>
+    <div id="calGrid" style="overflow-x:auto"></div>
+  </div>
+</div>
+
+<!-- ═══════════════ COBROS ════════════════════════════════════════════════ -->
+<div class="sec" id="sec-cobros">
+  <div class="page-header">
+    <h2><i class="bi bi-cash-stack me-2" style="color:#a78bfa"></i>Resumen de Cobros</h2>
+    <div style="display:flex;align-items:center;gap:10px">
+      <div style="font-size:13px;color:#7d8590">Semana (lunes):</div>
+      <input class="inp" id="cLunes" type="text" placeholder="DD/MM/AAAA" style="width:140px" oninput="fmtFecha(this)" onchange="renderCobros()">
+      <div style="font-size:13px;color:#7d8590;margin-left:8px">Mes:</div>
+      <select class="inp" id="cMes" onchange="renderCobros()" style="width:130px">
+        <option value="4">Abril</option><option value="5" selected>Mayo</option>
+        <option value="6">Junio</option><option value="7">Julio</option>
+        <option value="8">Agosto</option>
+      </select>
+      <select class="inp" id="cAnio" onchange="renderCobros()" style="width:90px">
+        <option value="2026" selected>2026</option><option value="2027">2027</option>
+      </select>
+    </div>
+  </div>
+  <div class="page-content">
+    <div class="cobros-grid" id="cobrosGrid"></div>
+  </div>
+</div>
+
+<!-- ═══════════════ ANÁLISIS ══════════════════════════════════════════════ -->
+<div class="sec" id="sec-analisis">
+  <div class="page-header">
+    <h2><i class="bi bi-bar-chart-line me-2" style="color:#a78bfa"></i>Análisis</h2>
+    <div style="display:flex;align-items:center;gap:10px">
+      <span style="font-size:13px;color:#7d8590">Año:</span>
+      <select class="inp" id="aAnio" onchange="renderAnalisis()" style="width:90px">
+        <option value="2026" selected>2026</option>
+      </select>
+    </div>
+  </div>
+  <div class="page-content">
+    <!-- KPIs globales -->
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:24px" id="kpiGlobal"></div>
+    <!-- Selector mes para detalle -->
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:16px;flex-wrap:wrap">
+      <span style="font-size:13px;color:#7d8590;font-weight:600">Detalle mensual:</span>
+      <div id="mesTabs" style="display:flex;flex-wrap:wrap;gap:5px"></div>
+    </div>
+    <!-- KPIs mes seleccionado -->
+    <div style="display:grid;grid-template-columns:repeat(6,1fr);gap:12px;margin-bottom:24px" id="kpiMes"></div>
+    <!-- Gráfico barras + tabla -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:24px">
+      <div class="glass" style="padding:20px">
+        <div style="font-size:12px;font-weight:700;color:#7d8590;text-transform:uppercase;letter-spacing:.08em;margin-bottom:14px">Ingresos por mes</div>
+        <div class="bar-chart" id="barCht"></div>
+        <div style="display:flex;gap:2px;margin-top:6px" id="barLbl"></div>
+      </div>
+      <div class="glass" style="padding:20px">
+        <div style="font-size:12px;font-weight:700;color:#7d8590;text-transform:uppercase;letter-spacing:.08em;margin-bottom:14px">Distribución de estados (mes)</div>
+        <div id="estDist"></div>
+      </div>
+    </div>
+    <!-- Tabla mensual completa -->
+    <div class="glass" style="padding:20px;overflow-x:auto">
+      <div style="font-size:12px;font-weight:700;color:#7d8590;text-transform:uppercase;letter-spacing:.08em;margin-bottom:14px">Tabla anual por indicador</div>
+      <table class="analisis-table" id="analTbl"></table>
+    </div>
+  </div>
+</div>
+
+</div><!-- /main -->
+
+<!-- MODAL TURNO -->
+<div class="modal-overlay" id="modalOverlay" onclick="if(event.target===this)closeModal()">
+  <div class="modal-box">
+    <div class="modal-head">
+      <h3 id="modalTit"><i class="bi bi-calendar-plus me-2" style="color:#a78bfa"></i>Nuevo turno</h3>
+      <button class="btn-sm btn-ghost" onclick="closeModal()"><i class="bi bi-x-lg"></i></button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="eIdx" value="-1">
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Fecha</label>
+          <input class="inp" id="mFe" placeholder="DD/MM/AAAA" maxlength="10" oninput="fmtFecha(this)">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Hora</label>
+          <select class="inp" id="mHo"><option value="">-- Hora --</option></select>
+        </div>
+        <div class="form-group full">
+          <label class="form-label">Paciente <span style="color:#484f58;font-size:10px;text-transform:none">— escribí para autocompletar</span></label>
+          <div class="ac-wrap">
+            <input class="inp" id="mPa" placeholder="Nombre del consultante" autocomplete="off" oninput="acInput()" onkeydown="acKey(event)">
+            <div class="ac-list" id="acList"></div>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Teléfono</label>
+          <input class="inp" id="mTe" placeholder="1125608443">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Monto ($)</label>
+          <input class="inp" type="number" id="mMo" placeholder="0">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Motivo</label>
+          <select class="inp" id="mMt">
+            <option value="">-- Motivo --</option>
+            <option>Sesion</option><option>Virtual</option><option>Vincular</option>
+            <option>Primera entrevista</option><option>Seguimiento</option><option>Otro</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Método</label>
+          <select class="inp" id="mMe">
+            <option value="">-- Método --</option>
+            <option>Efectivo</option><option>Transferencia</option>
+          </select>
+        </div>
+        <div class="form-group full">
+          <label class="form-label">Estado</label>
+          <div class="chips">
+            <div class="chip chip-Confirmado" onclick="setEst('Confirmado')">📋 Confirmado</div>
+            <div class="chip chip-Presente"   onclick="setEst('Presente')">👤 Presente</div>
+            <div class="chip chip-Pagado"     onclick="setEst('Pagado')">✅ Pagado</div>
+            <div class="chip chip-Nopagado"   onclick="setEst('No pagado')">❌ No pagado</div>
+            <div class="chip chip-Ausente"    onclick="setEst('Ausente')">🚫 Ausente</div>
+          </div>
+          <input type="hidden" id="mEs" value="Confirmado">
+        </div>
+        <div class="form-group full">
+          <label class="form-label">Observaciones</label>
+          <input class="inp" id="mOb" placeholder="Notas internas...">
+        </div>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn-sm btn-ghost" onclick="closeModal()">Cancelar</button>
+      <button class="btn-primary" onclick="guardar()"><i class="bi bi-check2-circle"></i> Guardar</button>
+    </div>
+  </div>
+</div>
+
+<!-- DETAIL POPUP -->
+<div class="modal-overlay" id="detOverlay" onclick="if(event.target===this)document.getElementById('detOverlay').classList.remove('open')">
+  <div class="detail-pop">
+    <div id="detContent"></div>
+  </div>
+</div>
+
+<!-- TOASTS -->
+<div id="toasts"></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/js/bootstrap.bundle.min.js"></script>
+<script>
+const API_URL = 'https://script.google.com/macros/s/AKfycbxQ7rbHaRQ3E_M4wOiUavae3ulazKTWptzBafrBhLbV0n_lHZYGe33YxkPdR-tNeH1GTQ/exec';
+let TURNOS = [];
+let _loading = false;
+
+// ── API: cargar turnos ────────────────────────────────────────────
+async function apiGet() {
+  try {
+    const r = await fetch(API_URL + '?action=getTurnos');
+    const d = await r.json();
+    return d.turnos || [];
+  } catch(e) {
+    console.error('apiGet error:', e);
+    return [];
+  }
+}
+
+async function apiPost(body) {
+  try {
+    const r = await fetch(API_URL, {
+      method: 'POST',
+      body: JSON.stringify(body)
+    });
+    return await r.json();
+  } catch(e) {
+    console.error('apiPost error:', e);
+    return { error: e.message };
+  }
+}
+
+async function cargarTurnos() {
+  showLoading(true);
+  TURNOS = await apiGet();
+  showLoading(false);
+  filtrar();
+}
+
+function showLoading(on) {
+  _loading = on;
+  let el = document.getElementById('loadingBar');
+  if(!el) return;
+  el.style.display = on ? 'block' : 'none';
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// CONSTANTES
+// ═══════════════════════════════════════════════════════════════════════════
+const HORARIOS=['08:30','09:00','09:30','10:00','10:30','11:00','11:30','12:00','12:30','13:00','13:30','14:00','14:30','15:00','15:30','16:00','16:30','17:00','17:30','18:00','18:30','19:00','19:30','20:00'];
+const DIAS_S=['Dom','Lun','Mar','Mié','Jue','Vie','Sáb'];
+const MESES_C=['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+const MESES_F=['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+const EST_COL={Pagado:'#16a34a','No pagado':'#dc2626',Ausente:'#ea580c',Confirmado:'#b45309',Presente:'#2563eb'};
+const EST_CLS={Pagado:'est-Pagado','No pagado':'est-Nopagado',Ausente:'est-Ausente',Confirmado:'est-Confirmado',Presente:'est-Presente'};
+const CT_CLS ={Pagado:'ct-Pagado','No pagado':'ct-Nopagado',Ausente:'ct-Ausente',Confirmado:'ct-Confirmado',Presente:'ct-Presente'};
+
+let pg=1, PG=20, filt=[], semAct=lunDe(new Date()), mesSel=4, acIdx=-1, acM=[];
+
+// ── Helpers fecha ──────────────────────────────────────────────────────────
+function pF(s){if(!s)return null;const p=String(s).split('/');if(p.length!==3)return null;const d=new Date(+p[2],+p[1]-1,+p[0]);return isNaN(d)?null:d}
+function fF(d){if(!d)return'';return`${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}/${d.getFullYear()}`}
+function lunDe(d){const dt=new Date(d);const day=dt.getDay();dt.setDate(dt.getDate()-(day===0?6:day-1));dt.setHours(0,0,0,0);return dt}
+function mismaF(a,b){return a&&b&&a.getFullYear()===b.getFullYear()&&a.getMonth()===b.getMonth()&&a.getDate()===b.getDate()}
+function fmtFecha(el){let v=el.value.replace(/[^0-9]/g,'');if(v.length>2)v=v.slice(0,2)+'/'+v.slice(2);if(v.length>5)v=v.slice(0,5)+'/'+v.slice(5);if(v.length>10)v=v.slice(0,10);el.value=v}
+function fmt$(n){return n?'$'+Number(n).toLocaleString('es-AR'):'—'}
+function mesKey(t){const d=pF(t.fecha);return d?`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`:null}
+
+// ── WA URL ──────────────────────────────────────────────────────────────────
+function waUrl(t){
+  let tel=String(t.tel||'').replace(/[\s\-\.]/g,'').replace(/\.0$/,'');
+  if(tel.startsWith('0'))tel=tel.slice(1);
+  if(tel.startsWith('15'))tel=tel.slice(2);
+  if(tel.length<7)return null;
+  const nom=encodeURIComponent(t.pac);
+  const fec=(t.fecha||'').replace(/\//g,'%2F');
+  const msg=`Hola%20${nom},%20te%20recuerdo%20tu%20turno%20en%20Ser%20y%20Sentir%20Consultoria%20el%20${fec}%20a%20las%20${t.hora}%20hs.%20Te%20esperamos!`;
+  return`https://wa.me/549${tel}?text=${msg}`;
+}
+
+// ── Badge ────────────────────────────────────────────────────────────────────
+function badge(e){return`<span class="badge-est ${EST_CLS[e]||''}">${e||'—'}</span>`}
+
+// ── Navegación ────────────────────────────────────────────────────────────────
+function goTo(id){
+  document.querySelectorAll('.sec').forEach(s=>s.classList.remove('on'));
+  document.getElementById('sec-'+id).classList.add('on');
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  document.querySelector(`[onclick="goTo('${id}')"]`).classList.add('active');
+  if(id==='semana') renderSemana();
+  if(id==='cobros') renderCobros();
+  if(id==='analisis') renderAnalisis();
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// TURNOS
+// ═══════════════════════════════════════════════════════════════════════════
+function init(){
+  // Cargar desde API
+  cargarTurnos();
+  // Horas
+  const sh=document.getElementById('mHo');
+  HORARIOS.forEach(h=>sh.innerHTML+=`<option value="${h}">${h}</option>`);
+  // Meses filtro
+  const meses=[...new Set(TURNOS.map(mesKey).filter(Boolean))].sort();
+  const fm=document.getElementById('fMes');
+  meses.forEach(m=>{const[y,mo]=m.split('-');fm.innerHTML+=`<option value="${m}">${MESES_F[+mo-1]} ${y}</option>`});
+  // Lunes cobros hoy
+  document.getElementById('cLunes').value=fF(lunDe(new Date()));
+  // cargarTurnos() ya se llamó arriba — llama filtrar() internamente
+  semHoy();
+  initAnalisis();
+  document.addEventListener('click',e=>{if(!e.target.closest('.ac-wrap'))document.getElementById('acList').style.display='none'});
+}
+
+function filtrar(){
+  const q=document.getElementById('srch').value.toLowerCase();
+  const fE=document.getElementById('fEst').value;
+  const fM=document.getElementById('fMes').value;
+  filt=TURNOS.filter(t=>{
+    if(q&&!t.pac.toLowerCase().includes(q)&&!(t.motivo||'').toLowerCase().includes(q))return false;
+    if(fE&&t.estado!==fE)return false;
+    if(fM&&mesKey(t)!==fM)return false;
+    return true;
+  });
+  pg=1;renderTabla();
+}
+
+function renderTabla(){
+  const st=(pg-1)*PG, sl=filt.slice(st,st+PG);
+  const tb=document.getElementById('tbody');
+  if(!sl.length){tb.innerHTML=`<tr><td colspan="10" style="text-align:center;padding:40px;color:#484f58"><i class="bi bi-search" style="font-size:2rem;display:block;margin-bottom:8px"></i>Sin resultados</td></tr>`;return}
+  tb.innerHTML=sl.map(t=>{
+    const idx=TURNOS.indexOf(t);
+    const url=waUrl(t);
+    const wab=url?`<a href="${url}" target="_blank" class="btn-sm btn-wa"><i class="bi bi-whatsapp"></i> WA</a>`:`<span style="color:#484f58;font-size:12px">sin tel</span>`;
+    return`<tr>
+      <td><span style="background:#21262d;border:1px solid #30363d;border-radius:6px;padding:3px 9px;font-size:13px;font-weight:600;font-variant-numeric:tabular-nums">${t.fecha}</span></td>
+      <td><span style="background:#1c2128;border:1px solid #30363d;border-radius:6px;padding:3px 9px;font-size:13px;font-weight:700;font-family:monospace">${t.hora}</span></td>
+      <td>
+        <div style="font-weight:600;color:#f0f6fc;font-size:14.5px">${t.pac}</div>
+        ${t.tel?`<div style="font-size:12px;color:#484f58">📱 ${t.tel}</div>`:''}
+      </td>
+      <td><span style="background:#21262d;border-radius:5px;padding:2px 8px;font-size:12.5px;color:#8b949e">${t.motivo||'—'}</span></td>
+      <td style="font-weight:700;color:#f0f6fc;font-size:15px">${t.monto?fmt$(t.monto):'—'}</td>
+      <td style="color:#8b949e;font-size:13px">${t.metodo||'—'}</td>
+      <td>${badge(t.estado)}</td>
+      <td style="color:#7d8590;font-size:13px;max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${t.obs||''}">${t.obs||''}</td>
+      <td style="text-align:center">${wab}</td>
+      <td style="white-space:nowrap">
+        <button class="btn-sm btn-ghost me-1" onclick="editT(${idx})" title="Editar"><i class="bi bi-pencil-fill"></i></button>
+        <button class="btn-sm btn-danger" onclick="delT(${idx})" title="Eliminar"><i class="bi bi-trash3-fill"></i></button>
+      </td>
+    </tr>`;
+  }).join('');
+  // Info y paginación
+  const tot=filt.length, totalPg=Math.ceil(tot/PG);
+  document.getElementById('pgInfo').textContent=`${Math.min(st+1,tot)}–${Math.min(st+PG,tot)} de ${tot} turnos`;
+  const pb=document.getElementById('pgBtns'); pb.innerHTML='';
+  for(let p=1;p<=totalPg;p++){
+    if(totalPg>8&&p>2&&p<totalPg-1&&Math.abs(p-pg)>1){if(p===3||p===totalPg-2)pb.innerHTML+=`<span style="color:#484f58;padding:0 4px">…</span>`;continue}
+    pb.innerHTML+=`<div class="pag-btn${p===pg?' active':''}" onclick="goP(${p})">${p}</div>`;
+  }
+}
+function goP(p){pg=p;renderTabla()}
+
+// ── Modal ────────────────────────────────────────────────────────────────────
+function openModal(t=null,idx=-1){
+  document.getElementById('eIdx').value = (idx !== undefined && idx !== null) ? idx : -1;
+  document.getElementById('modalTit').innerHTML=idx>=0?'<i class="bi bi-pencil-fill me-2" style="color:#a78bfa"></i>Editar turno':'<i class="bi bi-calendar-plus me-2" style="color:#a78bfa"></i>Nuevo turno';
+  const hoy=new Date();
+  document.getElementById('mFe').value=t?t.fecha:fF(hoy);
+  document.getElementById('mHo').value=t?t.hora:'';
+  document.getElementById('mPa').value=t?t.pac:'';
+  document.getElementById('mTe').value=t?t.tel:'';
+  document.getElementById('mMo').value=t?t.monto:'';
+  document.getElementById('mOb').value=t?t.obs:'';
+  selV('mMt',t?t.motivo:'');selV('mMe',t?t.metodo:'');
+  setEst(t?t.estado:'Confirmado');
+  document.getElementById('modalOverlay').classList.add('open');
+}
+function closeModal(){document.getElementById('modalOverlay').classList.remove('open')}
+function editT(i){openModal(TURNOS[i], TURNOS[i].id || i)}
+async function delT(i){
+  const t=TURNOS[i];
+  if(!confirm(`¿Eliminar el turno de ${t.pac} (${t.fecha} ${t.hora})?`))return;
+  showLoading(true);
+  const res=await apiPost({action:'deleteTurno',id:t.id});
+  if(res.ok){toast('Turno eliminado','info')}
+  else{toast('Error al eliminar','warn')}
+  await cargarTurnos();
+}
+function selV(id,v){const s=document.getElementById(id);for(let i=0;i<s.options.length;i++)if(s.options[i].value===v){s.selectedIndex=i;return}; s.selectedIndex=0}
+function setEst(e){
+  document.getElementById('mEs').value=e;
+  document.querySelectorAll('.chip').forEach(c=>{
+    c.classList.remove('sel');
+    if(c.textContent.toLowerCase().includes(e.split(' ').pop().toLowerCase()))c.classList.add('sel');
+  });
+}
+async function guardar(){
+  const fe=document.getElementById('mFe').value.trim();
+  const ho=document.getElementById('mHo').value;
+  const pa=document.getElementById('mPa').value.trim();
+  if(!fe||fe.length<10){toast('Ingresá la fecha DD/MM/AAAA','warn');return}
+  if(!ho){toast('Seleccioná la hora','warn');return}
+  if(!pa){toast('Ingresá el paciente','warn');return}
+  const nu={fecha:fe,hora:ho,pac:pa,tel:document.getElementById('mTe').value.trim(),
+    motivo:document.getElementById('mMt').value,monto:parseFloat(document.getElementById('mMo').value)||0,
+    metodo:document.getElementById('mMe').value,estado:document.getElementById('mEs').value||'Confirmado',
+    obs:document.getElementById('mOb').value.trim()};
+  const eId=document.getElementById('eIdx').value;
+  closeModal();
+  showLoading(true);
+  if(eId && eId!=='-1'){
+    // Editar: el eIdx ahora guarda el ID del turno
+    const res=await apiPost({action:'updateTurno',id:eId,turno:nu});
+    if(res.ok){toast('Turno actualizado ✓','ok')}
+    else{toast('Error al actualizar: '+(res.error||''),'warn')}
+  } else {
+    const res=await apiPost({action:'addTurno',turno:nu});
+    if(res.ok){toast('Turno guardado ✓','ok')}
+    else{toast('Error al guardar: '+(res.error||''),'warn')}
+  }
+  await cargarTurnos();
+}
+
+// ── Autocomplete ─────────────────────────────────────────────────────────────
+function histPac(){
+  const m={};
+  TURNOS.forEach(t=>{const k=t.pac.trim().toLowerCase();if(!k)return;if(!m[k])m[k]={nombre:t.pac.trim(),tel:t.tel,motivo:t.motivo,monto:t.monto,metodo:t.metodo};else{if(!m[k].tel&&t.tel)m[k].tel=t.tel;if(!m[k].monto&&t.monto)m[k].monto=t.monto}});
+  return Object.values(m).sort((a,b)=>a.nombre.localeCompare(b.nombre));
+}
+function acInput(){
+  const q=document.getElementById('mPa').value.toLowerCase().trim();
+  const dl=document.getElementById('acList');
+  dl.innerHTML='';acIdx=-1;acM=[];
+  if(!q){dl.style.display='none';return}
+  acM=histPac().filter(p=>p.nombre.toLowerCase().includes(q)).slice(0,8);
+  if(!acM.length){dl.style.display='none';return}
+  acM.forEach((p,i)=>{
+    const it=document.createElement('div');it.className='ac-item';
+    it.innerHTML=`<strong>${p.nombre}</strong>${p.tel?`<small>📱 ${p.tel}${p.monto?' · '+fmt$(p.monto):''}</small>`:''}`;
+    it.addEventListener('mousedown',e=>{e.preventDefault();elegir(p)});
+    dl.appendChild(it);
+  });
+  dl.style.display='block';
+}
+function acKey(e){
+  const its=document.querySelectorAll('.ac-item');if(!its.length)return;
+  if(e.key==='ArrowDown'){acIdx=Math.min(acIdx+1,its.length-1);its.forEach((it,i)=>it.className='ac-item'+(i===acIdx?' asel':''));e.preventDefault()}
+  else if(e.key==='ArrowUp'){acIdx=Math.max(acIdx-1,0);its.forEach((it,i)=>it.className='ac-item'+(i===acIdx?' asel':''));e.preventDefault()}
+  else if(e.key==='Enter'&&acIdx>=0){elegir(acM[acIdx]);e.preventDefault()}
+  else if(e.key==='Escape')document.getElementById('acList').style.display='none';
+}
+function elegir(p){
+  document.getElementById('mPa').value=p.nombre;
+  document.getElementById('mTe').value=p.tel||'';
+  if(p.monto)document.getElementById('mMo').value=p.monto;
+  selV('mMt',p.motivo);selV('mMe',p.metodo);
+  document.getElementById('acList').style.display='none';
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// CALENDARIO SEMANAL
+// ═══════════════════════════════════════════════════════════════════════════
+function semHoy(){semAct=lunDe(new Date());renderSemana()}
+function semNav(d){semAct=new Date(semAct);semAct.setDate(semAct.getDate()+d*7);renderSemana()}
+function renderSemana(){
+  const dias=Array.from({length:6},(_,i)=>{const d=new Date(semAct);d.setDate(d.getDate()+i);return d});
+  const lun=dias[0],sab=dias[5];
+  document.getElementById('semRng').textContent=`${lun.getDate()} ${MESES_C[lun.getMonth()]} — ${sab.getDate()} ${MESES_C[sab.getMonth()]} ${sab.getFullYear()}`;
+  // Turnos esta semana
+  const tSem={};
+  TURNOS.forEach(t=>{
+    const d=pF(t.fecha);if(!d)return;
+    dias.forEach((dia,di)=>{if(mismaF(d,dia)){const k=`${di}-${t.hora}`;if(!tSem[k])tSem[k]=[];tSem[k].push(t)}});
+  });
+  // Horas con turnos
+  const hConT=new Set(Object.keys(tSem).map(k=>k.split('-')[1]));
+  const hVis=HORARIOS.filter(h=>hConT.has(h));
+  if(!hVis.length){document.getElementById('calGrid').innerHTML=`<div style="text-align:center;padding:60px;color:#484f58"><i class="bi bi-calendar-x" style="font-size:2.5rem;display:block;margin-bottom:12px"></i>Sin turnos esta semana</div>`;return}
+  const hoy=new Date();
+  let html=`<div class="cal-grid">`;
+  // Header
+  html+=`<div class="cal-hora-hdr" style="height:60px"></div>`;
+  dias.forEach(d=>{
+    const esH=mismaF(d,hoy);
+    html+=`<div class="cal-dia-hdr${esH?' today':''}"><div class="dia-nom">${DIAS_S[d.getDay()]}</div><div class="dia-num">${d.getDate()}</div></div>`;
+  });
+  // Slots
+  hVis.forEach(hora=>{
+    html+=`<div class="cal-hora-lbl" style="height:66px">${hora}</div>`;
+    dias.forEach((_,di)=>{
+      const ts=tSem[`${di}-${hora}`]||[];
+      if(ts.length){
+        const t=ts[0],idx=TURNOS.indexOf(t);
+        const cls=CT_CLS[t.estado]||'';
+        html+=`<div class="cal-slot" style="padding:0"><div class="cal-turno ${cls}" onclick="verDet(${idx})">
+          <div class="ct-pac">${t.pac}</div>
+          ${t.motivo?`<div class="ct-mot">${t.motivo}</div>`:''}
+          ${t.monto?`<div style="font-size:11px;color:rgba(255,255,255,.75);margin-top:3px">${fmt$(t.monto)}</div>`:''}
+        </div></div>`;
+      } else {
+        html+=`<div class="cal-slot"></div>`;
+      }
+    });
+  });
+  html+=`</div>`;
+  document.getElementById('calGrid').innerHTML=html;
+}
+function verDet(i){
+  const t=TURNOS[i],url=waUrl(t);
+  const clr=EST_COL[t.estado]||'#7c3aed';
+  document.getElementById('detContent').innerHTML=`
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+      <div>
+        <h4>${t.pac}</h4>
+        <div style="font-size:13px;color:#7d8590;margin-top:3px">${t.fecha} · ${t.hora} hs</div>
+      </div>
+      <button class="btn-sm btn-ghost" onclick="document.getElementById('detOverlay').classList.remove('open')" style="margin-left:10px"><i class="bi bi-x-lg"></i></button>
+    </div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px">
+      <span class="badge-est ${EST_CLS[t.estado]||''}">${t.estado}</span>
+      ${t.motivo?`<span style="background:#21262d;border:1px solid #30363d;border-radius:5px;padding:3px 9px;font-size:12.5px;color:#8b949e">${t.motivo}</span>`:''}
+    </div>
+    <div class="detail-row"><span class="dk">Monto</span><span class="dv">${t.monto?fmt$(t.monto):'—'}</span></div>
+    <div class="detail-row"><span class="dk">Método</span><span class="dv">${t.metodo||'—'}</span></div>
+    ${t.tel?`<div class="detail-row"><span class="dk">Teléfono</span><span class="dv">${t.tel}</span></div>`:''}
+    ${t.obs?`<div class="detail-row"><span class="dk">Obs.</span><span class="dv" style="font-style:italic">${t.obs}</span></div>`:''}
+    <div style="display:flex;gap:8px;margin-top:14px">
+      <button class="btn-sm btn-ghost" onclick="document.getElementById('detOverlay').classList.remove('open');editT(${i})"><i class="bi bi-pencil-fill"></i> Editar</button>
+      ${url?`<a href="${url}" target="_blank" class="btn-sm btn-wa"><i class="bi bi-whatsapp"></i> Enviar WA</a>`:''}
+    </div>`;
+  document.getElementById('detOverlay').classList.add('open');
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// COBROS
+// ═══════════════════════════════════════════════════════════════════════════
+function renderCobros(){
+  const lunesStr=document.getElementById('cLunes').value;
+  const mes=parseInt(document.getElementById('cMes').value);
+  const anio=parseInt(document.getElementById('cAnio').value);
+  const lunes=pF(lunesStr);
+  // Semanal
+  let tSem=[],tMes=TURNOS.filter(t=>{const d=pF(t.fecha);return d&&d.getMonth()+1===mes&&d.getFullYear()===anio});
+  if(lunes){
+    const sab=new Date(lunes);sab.setDate(sab.getDate()+5);
+    tSem=TURNOS.filter(t=>{const d=pF(t.fecha);return d&&d>=lunes&&d<=sab});
+  }
+  const sem=(arr,est,campo)=>arr.filter(t=>!est||t.estado===est).reduce((s,t)=>s+(campo==='monto'?(+t.monto||0):1),0);
+  const sMon=t=>t.filter(t=>t.estado==='Pagado').reduce((s,t)=>s+(+t.monto||0),0);
+  const sPend=t=>t.filter(t=>t.estado==='No pagado').reduce((s,t)=>s+(+t.monto||0),0);
+  const sEfec=(arr)=>arr.filter(t=>t.estado==='Pagado'&&t.metodo==='Efectivo').reduce((s,t)=>s+(+t.monto||0),0);
+  const sTrans=(arr)=>arr.filter(t=>t.estado==='Pagado'&&t.metodo==='Transferencia').reduce((s,t)=>s+(+t.monto||0),0);
+  const sTicket=(arr)=>{const p=arr.filter(t=>t.estado==='Pagado');return p.length?Math.round(p.reduce((s,t)=>s+(+t.monto||0),0)/p.length):0};
+  // Detalle días semana
+  const DNOM=['Lunes','Martes','Miércoles','Jueves','Viernes','Sábado'];
+  let diasHTML='';
+  if(lunes){
+    for(let i=0;i<6;i++){
+      const d=new Date(lunes);d.setDate(d.getDate()+i);
+      const tD=TURNOS.filter(t=>mismaF(pF(t.fecha),d));
+      const cobD=sMon(tD);
+      diasHTML+=`<div class="cobros-dia-row"><span>${DNOM[i]} ${d.getDate()}/${d.getMonth()+1}</span><span class="dvl">${cobD?fmt$(cobD):'—'}</span></div>`;
+    }
+  } else {diasHTML='<div style="color:#484f58;font-size:13px">Ingresá el lunes para ver el detalle diario</div>'}
+  document.getElementById('cobrosGrid').innerHTML=`
+    <div>
+      <div class="cobros-section">
+        <h4><i class="bi bi-calendar-week" style="color:#a78bfa"></i>Resumen Semanal</h4>
+        ${lunes?`
+        <div class="cobros-row"><span class="lbl">💰 Total cobrado</span><span class="val verde">${fmt$(sMon(tSem))}</span></div>
+        <div class="cobros-row"><span class="lbl">✅ Turnos pagados</span><span class="val">${sem(tSem,'Pagado','cnt')}</span></div>
+        <div class="cobros-row"><span class="lbl">❌ No pagados</span><span class="val">${sem(tSem,'No pagado','cnt')}</span></div>
+        <div class="cobros-row"><span class="lbl">🚫 Ausentes</span><span class="val naranja">${sem(tSem,'Ausente','cnt')}</span></div>
+        <div class="cobros-row"><span class="lbl">⏳ Pendiente $</span><span class="val rojo">${fmt$(sPend(tSem))}</span></div>
+        <div class="cobros-row"><span class="lbl">💳 Efectivo</span><span class="val">${fmt$(sEfec(tSem))}</span></div>
+        <div class="cobros-row"><span class="lbl">💳 Transferencia</span><span class="val">${fmt$(sTrans(tSem))}</span></div>
+        <div style="border-top:1px solid #30363d;margin-top:14px;padding-top:12px">
+          <div style="font-size:11.5px;font-weight:700;color:#484f58;text-transform:uppercase;letter-spacing:.07em;margin-bottom:8px">Detalle por día</div>
+          ${diasHTML}
+        </div>`:'<div style="color:#484f58;padding:16px 0">Ingresá el lunes de la semana arriba</div>'}
+      </div>
+    </div>
+    <div>
+      <div class="cobros-section">
+        <h4><i class="bi bi-calendar-month" style="color:#a78bfa"></i>Resumen Mensual — ${MESES_F[mes-1]} ${anio}</h4>
+        <div class="cobros-row"><span class="lbl">💰 Total cobrado</span><span class="val verde">${fmt$(sMon(tMes))}</span></div>
+        <div class="cobros-row"><span class="lbl">✅ Turnos pagados</span><span class="val">${sem(tMes,'Pagado','cnt')}</span></div>
+        <div class="cobros-row"><span class="lbl">❌ No pagados</span><span class="val">${sem(tMes,'No pagado','cnt')}</span></div>
+        <div class="cobros-row"><span class="lbl">🚫 Ausentes</span><span class="val naranja">${sem(tMes,'Ausente','cnt')}</span></div>
+        <div class="cobros-row"><span class="lbl">⏳ Pendiente $</span><span class="val rojo">${fmt$(sPend(tMes))}</span></div>
+        <div class="cobros-row"><span class="lbl">📊 Ticket promedio</span><span class="val">${fmt$(sTicket(tMes))}</span></div>
+        <div class="cobros-row"><span class="lbl">💳 Efectivo</span><span class="val">${fmt$(sEfec(tMes))}</span></div>
+        <div class="cobros-row"><span class="lbl">💳 Transferencia</span><span class="val">${fmt$(sTrans(tMes))}</span></div>
+        <div class="cobros-row"><span class="lbl">📋 Total turnos</span><span class="val">${tMes.length}</span></div>
+      </div>
+    </div>`;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// ANÁLISIS
+// ═══════════════════════════════════════════════════════════════════════════
+function initAnalisis(){
+  const tabs=document.getElementById('mesTabs');
+  MESES_C.forEach((m,i)=>{
+    const b=document.createElement('button');b.className='mes-tab'+(i===4?' active':'');
+    b.textContent=m;b.onclick=()=>{mesSel=i;document.querySelectorAll('.mes-tab').forEach(t=>t.classList.remove('active'));b.classList.add('active');renderAnalisis()};
+    tabs.appendChild(b);
+  });
+  mesSel=4;renderAnalisis();
+}
+function renderAnalisis(){
+  const anio=parseInt(document.getElementById('aAnio').value)||2026;
+  const tT=TURNOS;
+  // KPI global
+  const cobT=tT.filter(t=>t.estado==='Pagado').reduce((s,t)=>s+(+t.monto||0),0);
+  const pendT=tT.filter(t=>t.estado==='No pagado').reduce((s,t)=>s+(+t.monto||0),0);
+  const ausT=tT.filter(t=>t.estado==='Ausente').length;
+  const tcob=tT.filter(t=>t.estado==='Pagado').length;
+  document.getElementById('kpiGlobal').innerHTML=`
+    <div class="stat-card"><div class="stat-icon" style="background:rgba(124,58,237,.15);color:#a78bfa"><i class="bi bi-calendar-check"></i></div><div class="stat-val">${tT.length}</div><div class="stat-lbl">Total turnos</div></div>
+    <div class="stat-card"><div class="stat-icon" style="background:rgba(22,163,74,.15);color:#4ade80"><i class="bi bi-wallet2"></i></div><div class="stat-val" style="font-size:20px">${fmt$(cobT)}</div><div class="stat-lbl">Total cobrado</div></div>
+    <div class="stat-card"><div class="stat-icon" style="background:rgba(220,38,38,.15);color:#f87171"><i class="bi bi-clock-history"></i></div><div class="stat-val" style="font-size:20px">${fmt$(pendT)}</div><div class="stat-lbl">Pendiente de cobro</div></div>
+    <div class="stat-card"><div class="stat-icon" style="background:rgba(234,88,12,.15);color:#fb923c"><i class="bi bi-person-x"></i></div><div class="stat-val">${ausT}</div><div class="stat-lbl">Total ausentes</div></div>`;
+  // KPI mes seleccionado
+  const tM=TURNOS.filter(t=>{const d=pF(t.fecha);return d&&d.getMonth()===mesSel&&d.getFullYear()===anio});
+  const cobM=tM.filter(t=>t.estado==='Pagado').reduce((s,t)=>s+(+t.monto||0),0);
+  const pagM=tM.filter(t=>t.estado==='Pagado').length;
+  const npM=tM.filter(t=>t.estado==='No pagado').length;
+  const ausM=tM.filter(t=>t.estado==='Ausente').length;
+  const tkM=pagM?Math.round(cobM/pagM):0;
+  const tasaM=tM.length?Math.round(pagM/tM.length*100):0;
+  document.getElementById('kpiMes').innerHTML=`
+    <div class="stat-card"><div class="stat-val" style="font-size:18px">${fmt$(cobM)}</div><div class="stat-lbl">💰 Cobrado</div></div>
+    <div class="stat-card"><div class="stat-val">${tM.length}</div><div class="stat-lbl">📋 Turnos</div></div>
+    <div class="stat-card"><div class="stat-val">${pagM}</div><div class="stat-lbl">✅ Pagados</div></div>
+    <div class="stat-card"><div class="stat-val">${npM}</div><div class="stat-lbl">❌ No pagados</div></div>
+    <div class="stat-card"><div class="stat-val">${ausM}</div><div class="stat-lbl">🚫 Ausentes</div></div>
+    <div class="stat-card"><div class="stat-val">${tasaM}%</div><div class="stat-lbl">📊 Tasa cobro</div></div>`;
+  // Gráfico barras
+  const barData=MESES_C.map((_,mi)=>TURNOS.filter(t=>{const d=pF(t.fecha);return d&&d.getMonth()===mi&&d.getFullYear()===anio&&t.estado==='Pagado'}).reduce((s,t)=>s+(+t.monto||0),0));
+  const maxB=Math.max(...barData,1);
+  document.getElementById('barCht').innerHTML=barData.map((v,i)=>`
+    <div class="bar" style="height:${Math.round(v/maxB*110)+4}px;background:${i===mesSel?'#7c3aed':'#21262d'};border:1px solid ${i===mesSel?'#a78bfa':'#30363d'}">
+      <div class="bar-tt">${MESES_C[i]}: ${fmt$(v)}</div>
+    </div>`).join('');
+  document.getElementById('barLbl').innerHTML=MESES_C.map((m,i)=>`<div style="flex:1;text-align:center;font-size:10.5px;color:${i===mesSel?'#a78bfa':'#484f58'};font-weight:${i===mesSel?700:400}">${m}</div>`).join('');
+  // Distribución estados mes
+  const estC={Pagado:pagM,'No pagado':npM,Ausente:ausM,Confirmado:tM.filter(t=>t.estado==='Confirmado').length,Presente:tM.filter(t=>t.estado==='Presente').length};
+  document.getElementById('estDist').innerHTML=Object.entries(estC).filter(([,n])=>n>0).map(([e,n])=>`
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+      <div style="display:flex;align-items:center;gap:8px"><div style="width:10px;height:10px;border-radius:3px;background:${EST_COL[e]||'#7c3aed'}"></div><span style="font-size:13.5px">${e}</span></div>
+      <div style="display:flex;align-items:center;gap:10px">
+        <div style="width:90px;height:7px;border-radius:4px;background:#21262d;overflow:hidden">
+          <div style="width:${tM.length?Math.round(n/tM.length*100):0}%;height:100%;background:${EST_COL[e]||'#7c3aed'};border-radius:4px"></div>
+        </div>
+        <span style="font-size:13px;font-weight:700;color:#f0f6fc;min-width:20px;text-align:right">${n}</span>
+      </div>
+    </div>`).join('');
+  // Tabla anual
+  const INDICADORES=[
+    {ico:'💰',lbl:'Ingresos cobrados',fn:(ts)=>fmt$(ts.filter(t=>t.estado==='Pagado').reduce((s,t)=>s+(+t.monto||0),0)),cls:'highlight'},
+    {ico:'📋',lbl:'Turnos totales',fn:(ts)=>ts.length,cls:''},
+    {ico:'✅',lbl:'Pagados',fn:(ts)=>ts.filter(t=>t.estado==='Pagado').length,cls:''},
+    {ico:'❌',lbl:'No pagados',fn:(ts)=>ts.filter(t=>t.estado==='No pagado').length,cls:''},
+    {ico:'🚫',lbl:'Ausentes',fn:(ts)=>ts.filter(t=>t.estado==='Ausente').length,cls:''},
+    {ico:'📊',lbl:'Ticket promedio',fn:(ts)=>{const p=ts.filter(t=>t.estado==='Pagado');return p.length?fmt$(Math.round(p.reduce((s,t)=>s+(+t.monto||0),0)/p.length)):'—'},cls:''},
+    {ico:'⏳',lbl:'Pendiente $',fn:(ts)=>fmt$(ts.filter(t=>t.estado==='No pagado').reduce((s,t)=>s+(+t.monto||0),0)),cls:''},
+  ];
+  let th=`<tr><th>Indicador</th>`;
+  MESES_C.forEach(m=>th+=`<th>${m}</th>`);
+  th+=`<th>Año</th></tr>`;
+  const rows=INDICADORES.map(ind=>{
+    const vals=MESES_C.map((_,mi)=>{
+      const ts=TURNOS.filter(t=>{const d=pF(t.fecha);return d&&d.getMonth()===mi&&d.getFullYear()===anio});
+      return ind.fn(ts);
+    });
+    const tot=TURNOS.filter(t=>{const d=pF(t.fecha);return d&&d.getFullYear()===anio});
+    return`<tr><td>${ind.ico} ${ind.lbl}</td>${vals.map((v,i)=>`<td class="${i===mesSel?'highlight':ind.cls}">${v}</td>`).join('')}<td style="font-weight:700;color:#f0f6fc">${ind.fn(tot)}</td></tr>`;
+  }).join('');
+  document.getElementById('analTbl').innerHTML=th+rows;
+}
+
+// ── Toast ─────────────────────────────────────────────────────────────────────
+function toast(msg,tipo='ok'){
+  const ic={ok:'check-circle-fill',info:'info-circle-fill',warn:'exclamation-circle-fill'};
+  const cl={ok:'#4ade80',info:'#60a5fa',warn:'#fbbf24'};
+  const t=document.createElement('div');t.className='toast';
+  t.innerHTML=`<i class="bi bi-${ic[tipo]||ic.ok}" style="color:${cl[tipo]||cl.ok};font-size:1rem"></i><span>${msg}</span>`;
+  document.getElementById('toasts').appendChild(t);
+  setTimeout(()=>{t.style.opacity='0';t.style.transform='translateX(20px)';t.style.transition='.3s';setTimeout(()=>t.remove(),300)},2500);
+}
+
+// ── Init ───────────────────────────────────────────────────────────────────────
+init();
+// Auto-refresh cada 60 segundos para sincronizar entre usuarios
+setInterval(()=>{ if(!_loading) cargarTurnos(); }, 60000);
+</script>
+</body>
+</html>
