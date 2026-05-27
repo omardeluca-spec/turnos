@@ -773,7 +773,7 @@ function renderSemana(){
         html+=`<div class="cal-slot" style="padding:0"><div class="cal-turno ${cls}" onclick="verDet(${idx})">
           <div class="ct-pac">${t.pac}</div>
           ${t.motivo?`<div class="ct-mot">${t.motivo}</div>`:''}
-          ${t.monto?`<div style="font-size:11px;color:rgba(255,255,255,.75);margin-top:3px">${fmt$(t.monto)}</div>`:''}
+          ${t.monto?`<div style="font-size:11px;color:rgb(45 38 129 / 75%);margin-top:3px">${fmt$(t.monto)}</div>`:''}
         </div></div>`;
       } else {
         html+=`<div class="cal-slot"></div>`;
