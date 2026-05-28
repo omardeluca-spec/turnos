@@ -199,8 +199,13 @@ select.inp option{background:#21262d}
 
   /* Main sin margen lateral */
   #main { margin-left: 0 !important; }
-  /* Padding inferior para no quedar tapado por el bottom nav */
-  .page-content { padding-bottom: 88px !important; }
+  /* Padding inferior en TODOS los apartados para no quedar tapado por bottom nav */
+  .page-content { padding: 12px 12px 96px !important; }
+  /* El wrapper de paginación también necesita padding para ser visible */
+  .pag-wrap { padding-bottom: 8px !important; }
+  /* Semana y Cobros también tienen contenido debajo */
+  #calGrid { padding-bottom: 8px !important; }
+  .cobros-grid { padding-bottom: 8px !important; }
 
   /* Header compacto */
   .page-header {
@@ -451,6 +456,23 @@ select.inp option{background:#21262d}
   .mob-wa-acc { display: inline-flex; }
   .col-wa { display: none !important; }
 }
+
+/* ── DATE INPUT ──────────────────────────────────────────────── */
+input[type="date"].inp {
+  color-scheme: dark;
+  appearance: none;
+  -webkit-appearance: none;
+}
+input[type="date"].inp::-webkit-calendar-picker-indicator {
+  filter: invert(0.7) sepia(1) saturate(3) hue-rotate(200deg);
+  cursor: pointer;
+  opacity: 0.8;
+  width: 18px;
+  height: 18px;
+}
+input[type="date"].inp::-webkit-calendar-picker-indicator:hover {
+  opacity: 1;
+}
 </style>
 </head>
 <body>
@@ -580,9 +602,9 @@ select.inp option{background:#21262d}
           <tbody id="tbody"></tbody>
         </table>
       </div>
-      <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border-top:1px solid #21262d">
+      <div class="pag-wrap" style="display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border-top:1px solid #21262d;flex-wrap:wrap;gap:8px">
         <span style="font-size:13px;color:#7d8590" id="pgInfo"></span>
-        <div id="pgBtns" style="display:flex;gap:4px"></div>
+        <div id="pgBtns" style="display:flex;gap:4px;flex-wrap:wrap"></div>
       </div>
     </div>
   </div>
@@ -694,7 +716,7 @@ select.inp option{background:#21262d}
       <div class="form-row">
         <div class="form-group">
           <label class="form-label">Fecha</label>
-          <input class="inp" id="mFe" placeholder="DD/MM/AAAA" maxlength="10" oninput="fmtFecha(this)">
+          <input class="inp" type="date" id="mFe" style="color-scheme:dark;cursor:pointer;min-height:40px">
         </div>
         <div class="form-group">
           <label class="form-label">Hora</label>
@@ -847,6 +869,8 @@ let pg=1, PG=20, filt=[], semAct=lunDe(new Date()), cobSemAct=lunDe(new Date()),
 // ── Helpers fecha ──────────────────────────────────────────────────────────
 function pF(s){if(!s)return null;const p=String(s).split('/');if(p.length!==3)return null;const d=new Date(+p[2],+p[1]-1,+p[0]);return isNaN(d)?null:d}
 function fF(d){if(!d)return'';return`${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}/${d.getFullYear()}`}
+function toISO(d){if(!d)return'';return`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`}
+function fromISO(s){if(!s)return null;const [y,m,d]=s.split('-');return new Date(+y,+m-1,+d)}
 function lunDe(d){const dt=new Date(d);const day=dt.getDay();dt.setDate(dt.getDate()-(day===0?6:day-1));dt.setHours(0,0,0,0);return dt}
 function mismaF(a,b){return a&&b&&a.getFullYear()===b.getFullYear()&&a.getMonth()===b.getMonth()&&a.getDate()===b.getDate()}
 function fmtFecha(el){let v=el.value.replace(/[^0-9]/g,'');if(v.length>2)v=v.slice(0,2)+'/'+v.slice(2);if(v.length>5)v=v.slice(0,5)+'/'+v.slice(5);if(v.length>10)v=v.slice(0,10);el.value=v}
@@ -987,7 +1011,9 @@ function openModal(t=null,idx=-1){
   document.getElementById('eIdx').value = (idx !== undefined && idx !== null) ? idx : -1;
   document.getElementById('modalTit').innerHTML=idx>=0?'<i class="bi bi-pencil-fill me-2" style="color:#a78bfa"></i>Editar turno':'<i class="bi bi-calendar-plus me-2" style="color:#a78bfa"></i>Nuevo turno';
   const hoy=new Date();
-  document.getElementById('mFe').value=t?t.fecha:fF(hoy);
+  // date input usa YYYY-MM-DD; si t.fecha viene en DD/MM/YYYY la convertimos
+  const fechaObj = t ? pF(t.fecha) : hoy;
+  document.getElementById('mFe').value = toISO(fechaObj || hoy);
   document.getElementById('mHo').value=t?t.hora:'';
   document.getElementById('mPa').value=t?t.pac:'';
   document.getElementById('mTe').value=t?t.tel:'';
@@ -1019,10 +1045,13 @@ function setEst(e){
   });
 }
 async function guardar(){
-  const fe=document.getElementById('mFe').value.trim();
+  const feISO=document.getElementById('mFe').value.trim();
   const ho=document.getElementById('mHo').value;
   const pa=document.getElementById('mPa').value.trim();
-  if(!fe||fe.length<10){toast('Ingresá la fecha DD/MM/AAAA','warn');return}
+  if(!feISO){toast('Seleccioná la fecha','warn');return}
+  // Convertir de YYYY-MM-DD a DD/MM/YYYY para guardar igual que antes
+  const feObj=fromISO(feISO);
+  const fe=fF(feObj);
   if(!ho){toast('Seleccioná la hora','warn');return}
   if(!pa){toast('Ingresá el paciente','warn');return}
   const nu={fecha:fe,hora:ho,pac:pa,tel:document.getElementById('mTe').value.trim(),
