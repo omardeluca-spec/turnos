@@ -54,7 +54,7 @@ tbody tr:last-child{border-bottom:none}
 .est-Pagado    {background:#16a34a}
 .est-Nopagado  {background:#dc2626}
 .est-Ausente   {background:#ea580c}
-.est-Confirmado{background:#b45309}
+.est-Confirmado{background:#fef08a;color:#374151}
 .est-Presente  {background:#2563eb}
 
 /* ── INPUTS ──────────────────────────────────────────────────────────────── */
@@ -92,7 +92,7 @@ select.inp option{background:#21262d}
 .chip{padding:6px 13px;border-radius:6px;font-size:13px;font-weight:700;cursor:pointer;border:2px solid transparent;transition:all .15s;color:rgba(255,255,255,.6)}
 .chip:hover{color:#fff}
 .chip.sel{color:#fff;border-color:currentColor}
-.chip-Confirmado{background:rgba(180,83,9,.15);color:#fbbf24}.chip-Confirmado.sel{background:#b45309;color:#fff;border-color:#b45309}
+.chip-Confirmado{background:rgba(254,240,138,.2);color:#a16207}.chip-Confirmado.sel{background:#fef08a;color:#374151;border-color:#ca8a04}
 .chip-Presente{background:rgba(37,99,235,.15);color:#60a5fa}.chip-Presente.sel{background:#2563eb;color:#fff;border-color:#2563eb}
 .chip-Pagado{background:rgba(22,163,74,.15);color:#4ade80}.chip-Pagado.sel{background:#16a34a;color:#fff;border-color:#16a34a}
 .chip-Nopagado{background:rgba(220,38,38,.15);color:#f87171}.chip-Nopagado.sel{background:#dc2626;color:#fff;border-color:#dc2626}
@@ -198,7 +198,9 @@ select.inp option{background:#21262d}
   #sidebar { display: none !important; }
 
   /* Main sin margen lateral */
-  #main { margin-left: 0 !important; padding-bottom: 80px; }
+  #main { margin-left: 0 !important; }
+  /* Padding inferior para no quedar tapado por el bottom nav */
+  .page-content { padding-bottom: 88px !important; }
 
   /* Header compacto */
   .page-header {
@@ -216,58 +218,39 @@ select.inp option{background:#21262d}
   .page-content { padding: 12px 12px 12px !important; }
 
   /* ── TABLA → TARJETAS MÓVIL ── */
-  .table-wrap table,
-  .table-wrap thead,
-  .table-wrap tbody,
-  .table-wrap th,
-  .table-wrap td,
-  .table-wrap tr { display: block !important; }
+  .table-wrap table { display: block !important; }
   .table-wrap thead { display: none !important; }
+  .table-wrap tbody { display: block !important; }
   .table-wrap tbody tr {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr !important;
+    grid-template-areas:
+      "fecha hora"
+      "pac   pac"
+      "estado monto"
+      "metodo obs"
+      "acc   acc" !important;
     background: #161b22 !important;
     border: 1px solid #30363d !important;
     border-radius: 12px !important;
     margin-bottom: 10px !important;
-    padding: 14px 14px 10px !important;
-    position: relative !important;
+    padding: 12px !important;
+    gap: 6px 10px !important;
   }
   .table-wrap tbody tr:hover { background: #1c2128 !important; }
-  .table-wrap tbody td {
-    padding: 0 !important;
-    border: none !important;
-    font-size: 13.5px !important;
-  }
-  /* Ocultar celdas individuales vacías en móvil */
-  .table-wrap tbody td:empty { display: none !important; }
+  .table-wrap tbody td { padding: 0 !important; border: none !important; display: flex !important; align-items: center !important; }
 
-  /* Celda fecha/hora: fila superior */
-  .td-fecha-hora {
-    display: flex !important;
-    align-items: center !important;
-    gap: 8px !important;
-    margin-bottom: 8px !important;
-  }
-  /* Celda paciente: nombre grande */
-  .td-pac { margin-bottom: 6px !important; }
-  /* Celda estado: en línea con monto */
-  .td-estado-monto {
-    display: flex !important;
-    align-items: center !important;
-    justify-content: space-between !important;
-    margin-bottom: 8px !important;
-    flex-wrap: wrap;
-    gap: 6px;
-  }
-  /* Fila acciones */
-  .td-acciones {
-    display: flex !important;
-    align-items: center !important;
-    gap: 8px !important;
-    border-top: 1px solid #21262d !important;
-    padding-top: 8px !important;
-    margin-top: 6px !important;
-    flex-wrap: wrap;
-  }
+  /* Asignar áreas del grid a cada columna */
+  .col-fecha  { grid-area: fecha !important; }
+  .col-hora   { grid-area: hora !important; justify-content: flex-end !important; }
+  .col-pac    { grid-area: pac !important; padding-top: 4px !important; border-top: 1px solid #21262d !important; flex-direction: column !important; align-items: flex-start !important; }
+  .col-mot    { display: none !important; } /* Se muestra integrado abajo */
+  .col-monto  { grid-area: monto !important; justify-content: flex-end !important; font-size: 16px !important; }
+  .col-metodo { grid-area: metodo !important; font-size: 12px !important; color: #484f58 !important; }
+  .col-estado { grid-area: estado !important; }
+  .col-obs    { grid-area: obs !important; font-size: 12px !important; justify-content: flex-end !important; color: #6b7280 !important; max-width: 100% !important; white-space: normal !important; overflow: hidden !important; display: -webkit-box !important; -webkit-line-clamp: 1 !important; -webkit-box-orient: vertical !important; }
+  .col-wa     { display: none !important; } /* WA va en acc */
+  .col-acc    { grid-area: acc !important; border-top: 1px solid #21262d !important; padding-top: 8px !important; margin-top: 2px !important; gap: 8px !important; flex-wrap: wrap !important; }
 
   /* Cobros: 1 columna */
   .cobros-grid { grid-template-columns: 1fr !important; }
@@ -313,7 +296,7 @@ select.inp option{background:#21262d}
   height: 68px;
   background: #161b22;
   border-top: 1px solid #30363d;
-  z-index: 200;
+  z-index: 500;
   align-items: center;
   justify-content: space-around;
   padding: 0 4px;
@@ -462,6 +445,12 @@ select.inp option{background:#21262d}
   }
 }
 
+
+.mob-wa-acc { display: none; }
+@media (max-width: 768px) {
+  .mob-wa-acc { display: inline-flex; }
+  .col-wa { display: none !important; }
+}
 </style>
 </head>
 <body>
@@ -963,27 +952,23 @@ function renderTabla(){
     const url=waUrl(t);
     const wab=url?`<a href="${url}" target="_blank" class="btn-sm btn-wa"><i class="bi bi-whatsapp"></i> WA</a>`:`<span style="color:#484f58;font-size:12px">sin tel</span>`;
     return`<tr>
-      <td class="td-fecha-hora"><span style="background:#21262d;border:1px solid #30363d;border-radius:6px;padding:3px 9px;font-size:13px;font-weight:600;font-variant-numeric:tabular-nums">${t.fecha}</span><span style="background:#1c2128;border:1px solid #30363d;border-radius:6px;padding:3px 9px;font-size:13px;font-weight:700;font-family:monospace">${t.hora}</span></td>
-      <td style="display:none">${t.hora}</td>
-      <td class="td-pac">
-        <div style="font-weight:700;color:#f0f6fc;font-size:15px">${t.pac}</div>
-        ${t.tel?`<div style="font-size:12px;color:#484f58;margin-top:2px">📱 ${t.tel}</div>`:''}
+      <td class="col-fecha"><span style="background:#21262d;border:1px solid #30363d;border-radius:6px;padding:3px 9px;font-size:13px;font-weight:600;font-variant-numeric:tabular-nums">${t.fecha}</span></td>
+      <td class="col-hora"><span style="background:#1c2128;border:1px solid #30363d;border-radius:6px;padding:3px 9px;font-size:13px;font-weight:700;font-family:monospace">${t.hora}</span></td>
+      <td class="col-pac">
+        <div style="font-weight:600;color:#f0f6fc;font-size:14.5px">${t.pac}</div>
+        ${t.tel?`<div style="font-size:12px;color:#484f58">📱 ${t.tel}</div>`:''}
       </td>
-      <td><span style="background:#21262d;border-radius:5px;padding:2px 8px;font-size:12.5px;color:#8b949e">${t.motivo||'—'}</span></td>
-      <td class="td-estado-monto">
-        ${badge(t.estado)}
-        <span style="font-weight:700;color:#f0f6fc;font-size:15px">${t.monto?fmt$(t.monto):'—'}</span>
-      </td>
-      <td style="color:#8b949e;font-size:13px">${t.metodo||'—'}</td>
-      <td style="display:none">${badge(t.estado)}</td>
-      <td style="display:none">${t.monto?fmt$(t.monto):'—'}</td>
-      ${t.obs?`<td style="color:#7d8590;font-size:12.5px;font-style:italic">💬 ${t.obs}</td>`:'<td style="display:none"></td>'}
-      <td class="td-acciones">
-        ${wab}
-        <button class="btn-sm btn-ghost" onclick="editT(${idx})" title="Editar"><i class="bi bi-pencil-fill"></i> Editar</button>
+      <td class="col-mot"><span style="background:#21262d;border-radius:5px;padding:2px 8px;font-size:12.5px;color:#8b949e">${t.motivo||'—'}</span></td>
+      <td class="col-monto" style="font-weight:700;color:#f0f6fc;font-size:15px">${t.monto?fmt$(t.monto):'—'}</td>
+      <td class="col-metodo" style="color:#8b949e;font-size:13px">${t.metodo||'—'}</td>
+      <td class="col-estado">${badge(t.estado)}</td>
+      <td class="col-obs" style="color:#7d8590;font-size:13px;max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${t.obs||''}">${t.obs||''}</td>
+      <td class="col-wa" style="text-align:center">${wab}</td>
+      <td class="col-acc" style="white-space:nowrap">
+        <span class="mob-wa-acc">${wab}</span>
+        <button class="btn-sm btn-ghost me-1" onclick="editT(${idx})" title="Editar"><i class="bi bi-pencil-fill"></i></button>
         <button class="btn-sm btn-danger" onclick="delT(${idx})" title="Eliminar"><i class="bi bi-trash3-fill"></i></button>
       </td>
-      <td style="display:none"></td>
     </tr>`;
   }).join('');
   // Info y paginación
@@ -1136,7 +1121,7 @@ function renderSemana(){
         html+=`<div class="cal-slot" style="padding:0"><div class="cal-turno ${cls}" onclick="verDet(${idx})">
           <div class="ct-pac">${t.pac}</div>
           ${t.motivo?`<div class="ct-mot">${t.motivo}</div>`:''}
-          ${t.monto?`<div style="font-size:11px;color:rgba(255,255,255,.75);margin-top:3px">${fmt$(t.monto)}</div>`:''}
+          ${t.monto?`<div style="font-size:11px;font-weight:800;color:${t.estado==='Confirmado'?'#374151':'rgba(255,255,255,.9)'};margin-top:3px">${fmt$(t.monto)}</div>`:''}
         </div></div>`;
       } else {
         html+=`<div class="cal-slot"></div>`;
