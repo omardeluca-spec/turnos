@@ -234,7 +234,7 @@ select.inp option{background:#21262d}
       "pac   pac"
       "estado monto"
       "metodo obs"
-      "acc   acc" !important;
+      "deuda acc" !important;
     background: #161b22 !important;
     border: 1px solid #30363d !important;
     border-radius: 12px !important;
@@ -255,6 +255,7 @@ select.inp option{background:#21262d}
   .col-estado { grid-area: estado !important; }
   .col-obs    { grid-area: obs !important; font-size: 12px !important; justify-content: flex-end !important; color: #6b7280 !important; max-width: 100% !important; white-space: normal !important; overflow: hidden !important; display: -webkit-box !important; -webkit-line-clamp: 1 !important; -webkit-box-orient: vertical !important; }
   .col-wa     { display: none !important; } /* WA va en acc */
+  .col-deuda  { grid-area: deuda !important; font-size:13px !important; }
   .col-acc    { grid-area: acc !important; border-top: 1px solid #21262d !important; padding-top: 8px !important; margin-top: 2px !important; gap: 8px !important; flex-wrap: wrap !important; }
 
   /* Cobros: 1 columna */
@@ -473,6 +474,29 @@ input[type="date"].inp::-webkit-calendar-picker-indicator {
 input[type="date"].inp::-webkit-calendar-picker-indicator:hover {
   opacity: 1;
 }
+
+/* ── BADGE DEUDA ─────────────────────────────────────────────── */
+.deuda-badge{
+  display:inline-flex;align-items:center;gap:4px;
+  background:rgba(220,38,38,.15);border:1px solid rgba(220,38,38,.3);
+  color:#f87171;border-radius:6px;padding:2px 8px;
+  font-size:11.5px;font-weight:700;white-space:nowrap;
+}
+.deuda-badge i{font-size:10px}
+/* Saldos pendientes en cobros */
+.saldo-item{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:10px 0;border-bottom:1px solid #21262d;
+}
+.saldo-item:last-child{border-bottom:none}
+.saldo-pac{font-size:14px;font-weight:600;color:#f0f6fc}
+.saldo-tel{font-size:12px;color:#484f58;margin-top:2px}
+.saldo-monto{font-size:16px;font-weight:800;color:#f87171}
+.saldo-total-row{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:12px 0 4px;border-top:2px solid #30363d;margin-top:4px;
+  font-weight:800;font-size:15px;
+}
 </style>
 </head>
 <body>
@@ -595,7 +619,7 @@ input[type="date"].inp::-webkit-calendar-picker-indicator:hover {
           <thead>
             <tr>
               <th>Fecha</th><th>Hora</th><th>Paciente</th><th>Motivo</th>
-              <th>Monto</th><th>Método</th><th>Estado</th><th>Observación</th>
+              <th>Monto</th><th>Método</th><th>Estado</th><th>Observación</th><th>💸 Deuda</th>
               <th style="text-align:center">WA</th><th></th>
             </tr>
           </thead>
@@ -658,6 +682,16 @@ input[type="date"].inp::-webkit-calendar-picker-indicator:hover {
   </div>
   <div class="page-content">
     <div class="cobros-grid" id="cobrosGrid"></div>
+    <!-- SALDOS PENDIENTES -->
+    <div class="glass" style="margin-top:20px;padding:22px" id="saldosSection">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:8px">
+        <div style="font-size:13px;font-weight:700;color:#f87171;text-transform:uppercase;letter-spacing:.08em;display:flex;align-items:center;gap:8px">
+          <i class="bi bi-exclamation-circle-fill"></i> Saldos Pendientes por Paciente
+        </div>
+        <span style="font-size:12px;color:#7d8590" id="saldosUpd"></span>
+      </div>
+      <div id="saldosLista"></div>
+    </div>
   </div>
 </div>
 
@@ -766,6 +800,16 @@ input[type="date"].inp::-webkit-calendar-picker-indicator:hover {
         <div class="form-group full">
           <label class="form-label">Observaciones</label>
           <input class="inp" id="mOb" placeholder="Notas internas...">
+        </div>
+        <div class="form-group full" id="deudaGroup">
+          <label class="form-label" style="display:flex;align-items:center;gap:8px">
+            <span>💸 Deuda pendiente ($)</span>
+            <span style="font-size:10px;color:#484f58;text-transform:none;font-weight:400">— dejá en 0 si no debe nada</span>
+          </label>
+          <div style="display:flex;gap:10px;align-items:center">
+            <input class="inp" type="number" id="mDe" placeholder="0" min="0" style="flex:1">
+            <div style="font-size:12px;color:#7d8590;min-width:110px" id="deudaPrevia"></div>
+          </div>
         </div>
       </div>
     </div>
@@ -885,7 +929,7 @@ function waUrl(t){
   if(tel.length<7)return null;
   const nom=encodeURIComponent(t.pac);
   const fec=(t.fecha||'').replace(/\//g,'%2F');
-  const msg=`Hola%20${nom},%20te%20recuerdo%20tu%20turno%20en%20Ser%20y%20Sentir%20Consultoria%20el%20${fec}%20a%20las%20${t.hora}%20hs.%20Te%20esperamos!`;
+  const msg=encodeURIComponent(`Hola ${t.pac}, te recuerdo tu turno en Ser y Sentir Consultoría el ${t.fecha} a las ${t.hora} hs. Te espero!`);
   return`https://wa.me/549${tel}?text=${msg}`;
 }
 
@@ -964,6 +1008,7 @@ function filtrar(){
     return (b.hora||'').localeCompare(a.hora||'');
   });
   actualizarMobMeses();
+  calcSaldos();
   pg=1;renderTabla();
 }
 
@@ -987,6 +1032,7 @@ function renderTabla(){
       <td class="col-metodo" style="color:#8b949e;font-size:13px">${t.metodo||'—'}</td>
       <td class="col-estado">${badge(t.estado)}</td>
       <td class="col-obs" style="color:#7d8590;font-size:13px;max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${t.obs||''}">${t.obs||''}</td>
+      <td class="col-deuda" style="white-space:nowrap">${parseDeuda(t.deuda)>0?`<span class="deuda-badge"><i class="bi bi-exclamation-circle-fill"></i> ${fmt$(parseDeuda(t.deuda))}</span>`:''}</td>
       <td class="col-wa" style="text-align:center">${wab}</td>
       <td class="col-acc" style="white-space:nowrap">
         <span class="mob-wa-acc">${wab}</span>
@@ -1019,6 +1065,23 @@ function openModal(t=null,idx=-1){
   document.getElementById('mTe').value=t?t.tel:'';
   document.getElementById('mMo').value=t?t.monto:'';
   document.getElementById('mOb').value=t?t.obs:'';
+  document.getElementById('mDe').value=t?parseDeuda(t.deuda):'';
+  // Mostrar deuda acumulada previa del paciente (excluyendo turno actual)
+  if(t && t.pac){
+    const rowId = document.getElementById('eIdx').value;
+    const deudaAcum = TURNOS
+      .filter(x => x.pac.trim().toLowerCase()===t.pac.trim().toLowerCase()
+        && parseDeuda(x.deuda)>0
+        && String(x.id)!==String(rowId))
+      .reduce((s,x)=>s+parseDeuda(x.deuda),0);
+    const el=document.getElementById('deudaPrevia');
+    if(el) el.innerHTML = deudaAcum>0
+      ? `<span style="color:#f87171;font-size:12px">Deuda acumulada: <b>${fmt$(deudaAcum)}</b></span>`
+      : `<span style="color:#4ade80;font-size:12px">Sin deuda previa ✓</span>`;
+  } else {
+    const el=document.getElementById('deudaPrevia');
+    if(el) el.innerHTML='';
+  }
   selV('mMt',t?t.motivo:'');selV('mMe',t?t.metodo:'');
   setEst(t?t.estado:'Confirmado');
   document.getElementById('modalOverlay').classList.add('open');
@@ -1057,7 +1120,8 @@ async function guardar(){
   const nu={fecha:fe,hora:ho,pac:pa,tel:document.getElementById('mTe').value.trim(),
     motivo:document.getElementById('mMt').value,monto:parseFloat(document.getElementById('mMo').value)||0,
     metodo:document.getElementById('mMe').value,estado:document.getElementById('mEs').value||'Confirmado',
-    obs:document.getElementById('mOb').value.trim()};
+    obs:document.getElementById('mOb').value.trim(),
+    deuda:parseFloat(document.getElementById('mDe').value)||0};
   const eId=document.getElementById('eIdx').value;
   closeModal();
   showLoading(true);
@@ -1108,6 +1172,15 @@ function elegir(p){
   if(p.monto)document.getElementById('mMo').value=p.monto;
   selV('mMt',p.motivo);selV('mMe',p.metodo);
   document.getElementById('acList').style.display='none';
+  // Mostrar deuda acumulada del paciente elegido
+  const rowId=document.getElementById('eIdx').value;
+  const deudaAcum=TURNOS.filter(x=>x.pac.trim().toLowerCase()===p.nombre.trim().toLowerCase()
+    &&(+x.deuda||0)>0 && String(x.id)!==String(rowId))
+    .reduce((s,x)=>s+parseDeuda(x.deuda),0);
+  const el=document.getElementById('deudaPrevia');
+  if(el) el.innerHTML=deudaAcum>0
+    ?`<span style="color:#f87171;font-size:12px">Deuda acumulada: <b>${fmt$(deudaAcum)}</b></span>`
+    :`<span style="color:#4ade80;font-size:12px">Sin deuda previa ✓</span>`;
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -1186,6 +1259,68 @@ function verDet(i){
   document.getElementById('detOverlay').classList.add('open');
 }
 
+
+// ─── SALDOS PENDIENTES ────────────────────────────────────────────
+function parseDeuda(v){
+  if(v===undefined||v===null||v==='') return 0;
+  // Soporta "16000", "16.000", "16.000,00", "16,000.00"
+  const s=String(v).trim().replace(/[^0-9,.-]/g,'');
+  // Si tiene coma como separador decimal (formato argentino: "16.000,00")
+  if(s.includes(',')&&s.lastIndexOf(',')>s.lastIndexOf('.'))
+    return parseFloat(s.replace(/\./g,'').replace(',','.'))||0;
+  return parseFloat(s.replace(',',''))||0;
+}
+
+// Debug: llamar debugDeudas() en la consola del navegador para ver qué llega
+function debugDeudas(){
+  const con=TURNOS.filter(t=>t.deuda!==undefined&&t.deuda!=='');
+  console.log('Turnos con campo deuda:', con.length);
+  con.slice(0,5).forEach(t=>console.log(t.pac, '| raw deuda:', JSON.stringify(t.deuda), '| parsed:', parseDeuda(t.deuda)));
+  const total=TURNOS.reduce((s,t)=>s+parseDeuda(t.deuda),0);
+  console.log('Total deuda calculada:', total);
+  calcSaldos();
+  alert('Revisá la consola (F12). Turnos con deuda: '+con.length+'. Total: $'+total.toLocaleString('es-AR'));
+}
+
+function calcSaldos(){
+  // Agrupar deudas por paciente (normalizado)
+  const mapa={};
+  TURNOS.forEach(t=>{
+    const deuda=parseDeuda(t.deuda);
+    if(deuda<=0) return;
+    const key=t.pac.trim().toLowerCase();
+    if(!mapa[key]) mapa[key]={nombre:t.pac.trim(),tel:t.tel||'',total:0};
+    if(!mapa[key].tel&&t.tel) mapa[key].tel=t.tel;
+    mapa[key].total+=deuda;
+    // Actualizar tel si falta
+    if(!mapa[key].tel&&t.tel) mapa[key].tel=t.tel;
+  });
+  const lista=Object.values(mapa).filter(x=>x.total>0).sort((a,b)=>b.total-a.total);
+  const totalDeuda=lista.reduce((s,x)=>s+x.total,0);
+  const el=document.getElementById('saldosLista');
+  const upd=document.getElementById('saldosUpd');
+  if(!el) return; // sección no visible aún, se calculará al navegar a Cobros
+  if(upd) upd.textContent=`${lista.length} paciente${lista.length!==1?'s':''} con deuda`;
+  if(!lista.length){
+    el.innerHTML=`<div style="text-align:center;padding:30px;color:#484f58"><i class="bi bi-check-circle" style="font-size:2rem;display:block;margin-bottom:8px;color:#4ade80"></i>Sin deudas pendientes 🎉</div>`;
+    return;
+  }
+  el.innerHTML=lista.map(p=>{
+    const url=p.tel?waUrl({pac:p.nombre,tel:p.tel,fecha:'',hora:''}):'';
+    return`<div class="saldo-item">
+      <div>
+        <div class="saldo-pac">${p.nombre}</div>
+        ${p.tel?`<div class="saldo-tel">📱 ${p.tel}</div>`:''}
+      </div>
+      <div style="display:flex;align-items:center;gap:10px">
+        <span class="saldo-monto">${fmt$(p.total)}</span>
+        ${url?`<a href="${url}" target="_blank" class="btn-sm btn-wa" style="font-size:11px;padding:4px 8px"><i class="bi bi-whatsapp"></i></a>`:''}
+      </div>
+    </div>`;
+  }).join('')
+  +`<div class="saldo-total-row"><span style="color:#7d8590">Total adeudado</span><span style="color:#f87171">${fmt$(totalDeuda)}</span></div>`;
+}
+
 // ═══════════════════════════════════════════════════════════════════════════
 // COBROS
 // ═══════════════════════════════════════════════════════════════════════════
@@ -1248,6 +1383,7 @@ function renderCobros(){
         <div class="cobros-row"><span class="lbl">📋 Total turnos</span><span class="val">${tMes.length}</span></div>
       </div>
     </div>`;
+  calcSaldos();
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
