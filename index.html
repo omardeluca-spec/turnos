@@ -497,6 +497,43 @@ input[type="date"].inp::-webkit-calendar-picker-indicator:hover {
   padding:12px 0 4px;border-top:2px solid #30363d;margin-top:4px;
   font-weight:800;font-size:15px;
 }
+
+/* ── CHECKBOX DEUDA PREVIA ───────────────────────────────────────── */
+.deuda-check-wrap {
+  display: none;
+  align-items: center;
+  gap: 10px;
+  background: rgba(248,113,113,.08);
+  border: 1px solid rgba(248,113,113,.25);
+  border-radius: 10px;
+  padding: 12px 14px;
+  cursor: pointer;
+  transition: all .18s;
+  user-select: none;
+  margin-top: 4px;
+}
+.deuda-check-wrap.visible { display: flex; }
+.deuda-check-wrap:hover { background: rgba(248,113,113,.14); border-color: rgba(248,113,113,.4); }
+.deuda-check-wrap.checked { background: rgba(74,222,128,.08); border-color: rgba(74,222,128,.3); }
+.deuda-checkbox {
+  width: 20px; height: 20px;
+  border-radius: 5px;
+  border: 2px solid #f87171;
+  background: transparent;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 13px;
+  flex-shrink: 0;
+  transition: all .15s;
+}
+.deuda-check-wrap.checked .deuda-checkbox {
+  background: #4ade80;
+  border-color: #4ade80;
+}
+.deuda-check-txt { flex: 1; font-size: 13.5px; }
+.deuda-check-txt .dct-lbl { color: #f0f6fc; font-weight: 600; }
+.deuda-check-txt .dct-monto { color: #f87171; font-weight: 800; font-size: 15px; }
+.deuda-check-wrap.checked .deuda-check-txt .dct-monto { color: #4ade80; }
+.deuda-check-txt .dct-sub { font-size: 11.5px; color: #7d8590; margin-top: 1px; }
 </style>
 </head>
 <body>
@@ -802,14 +839,21 @@ input[type="date"].inp::-webkit-calendar-picker-indicator:hover {
           <input class="inp" id="mOb" placeholder="Notas internas...">
         </div>
         <div class="form-group full" id="deudaGroup">
-          <label class="form-label" style="display:flex;align-items:center;gap:8px">
-            <span>💸 Deuda pendiente ($)</span>
-            <span style="font-size:10px;color:#484f58;text-transform:none;font-weight:400">— dejá en 0 si no debe nada</span>
-          </label>
-          <div style="display:flex;gap:10px;align-items:center">
-            <input class="inp" type="number" id="mDe" placeholder="0" min="0" style="flex:1">
-            <div style="font-size:12px;color:#7d8590;min-width:110px" id="deudaPrevia"></div>
+          <!-- Checkbox: cobrar deuda anterior -->
+          <div class="deuda-check-wrap" id="deudaCheckWrap" onclick="toggleDeudaCheck()">
+            <div class="deuda-checkbox" id="deudaCheckbox"></div>
+            <div class="deuda-check-txt">
+              <div class="dct-lbl">Cobrar deuda anterior</div>
+              <div class="dct-monto" id="deudaCheckMonto">$0</div>
+              <div class="dct-sub">Se suma al monto de esta sesión</div>
+            </div>
           </div>
+          <!-- Campo deuda nueva que queda pendiente -->
+          <label class="form-label" style="display:flex;align-items:center;gap:8px;margin-top:10px">
+            <span>💸 Nueva deuda pendiente ($)</span>
+            <span style="font-size:10px;color:#484f58;text-transform:none;font-weight:400">— lo que queda sin pagar de esta sesión</span>
+          </label>
+          <input class="inp" type="number" id="mDe" placeholder="0" min="0">
         </div>
       </div>
     </div>
@@ -965,6 +1009,53 @@ function toggleMobFilters(){
 // ═══════════════════════════════════════════════════════════════════════════
 // TURNOS
 // ═══════════════════════════════════════════════════════════════════════════
+
+// ── CHECKBOX DEUDA PREVIA ─────────────────────────────────────────
+let _deudaAcumPac = 0;   // deuda acumulada del paciente actual
+let _deudaChecked = false;
+let _montoOriginal = 0;  // monto de la sesión sin deuda
+
+function toggleDeudaCheck(){
+  _deudaChecked = !_deudaChecked;
+  const wrap = document.getElementById('deudaCheckWrap');
+  const box  = document.getElementById('deudaCheckbox');
+  const mo   = document.getElementById('mMo');
+  if(_deudaChecked){
+    wrap.classList.add('checked');
+    box.innerHTML = '✓';
+    // Guardar monto original y sumar la deuda
+    _montoOriginal = parseFloat(mo.value) || 0;
+    mo.value = _montoOriginal + _deudaAcumPac;
+  } else {
+    wrap.classList.remove('checked');
+    box.innerHTML = '';
+    // Restaurar monto original
+    mo.value = _montoOriginal;
+  }
+}
+
+function mostrarDeudaCheck(pacNombre, rowIdExcluir){
+  _deudaChecked = false;
+  _deudaAcumPac = 0;
+  const wrap = document.getElementById('deudaCheckWrap');
+  const box  = document.getElementById('deudaCheckbox');
+  if(box) box.innerHTML = '';
+  if(wrap) wrap.classList.remove('checked');
+  if(!pacNombre){ if(wrap) wrap.classList.remove('visible'); return; }
+  const acum = TURNOS
+    .filter(x => x.pac.trim().toLowerCase() === pacNombre.trim().toLowerCase()
+      && parseDeuda(x.deuda) > 0
+      && String(x.id) !== String(rowIdExcluir))
+    .reduce((s,x) => s + parseDeuda(x.deuda), 0);
+  _deudaAcumPac = acum;
+  const lbl = document.getElementById('deudaCheckMonto');
+  if(lbl) lbl.textContent = fmt$(acum);
+  if(wrap){
+    if(acum > 0) wrap.classList.add('visible');
+    else wrap.classList.remove('visible');
+  }
+}
+
 function init(){
   // Cargar desde API
   cargarTurnos();
@@ -1066,27 +1157,22 @@ function openModal(t=null,idx=-1){
   document.getElementById('mMo').value=t?t.monto:'';
   document.getElementById('mOb').value=t?t.obs:'';
   document.getElementById('mDe').value=t?parseDeuda(t.deuda):'';
-  // Mostrar deuda acumulada previa del paciente (excluyendo turno actual)
-  if(t && t.pac){
-    const rowId = document.getElementById('eIdx').value;
-    const deudaAcum = TURNOS
-      .filter(x => x.pac.trim().toLowerCase()===t.pac.trim().toLowerCase()
-        && parseDeuda(x.deuda)>0
-        && String(x.id)!==String(rowId))
-      .reduce((s,x)=>s+parseDeuda(x.deuda),0);
-    const el=document.getElementById('deudaPrevia');
-    if(el) el.innerHTML = deudaAcum>0
-      ? `<span style="color:#f87171;font-size:12px">Deuda acumulada: <b>${fmt$(deudaAcum)}</b></span>`
-      : `<span style="color:#4ade80;font-size:12px">Sin deuda previa ✓</span>`;
-  } else {
-    const el=document.getElementById('deudaPrevia');
-    if(el) el.innerHTML='';
-  }
+  // Mostrar checkbox de deuda previa
+  const rowIdActual = document.getElementById('eIdx').value;
+  mostrarDeudaCheck(t ? t.pac : null, rowIdActual);
+  _montoOriginal = parseFloat(document.getElementById('mMo').value) || 0;
   selV('mMt',t?t.motivo:'');selV('mMe',t?t.metodo:'');
   setEst(t?t.estado:'Confirmado');
   document.getElementById('modalOverlay').classList.add('open');
 }
-function closeModal(){document.getElementById('modalOverlay').classList.remove('open')}
+function closeModal(){
+  document.getElementById('modalOverlay').classList.remove('open');
+  _deudaChecked=false; _deudaAcumPac=0; _montoOriginal=0;
+  const wrap=document.getElementById('deudaCheckWrap');
+  const box=document.getElementById('deudaCheckbox');
+  if(wrap){wrap.classList.remove('checked','visible');}
+  if(box) box.innerHTML='';
+}
 function editT(i){openModal(TURNOS[i], TURNOS[i].id || i)}
 async function delT(i){
   const t=TURNOS[i];
@@ -1132,8 +1218,13 @@ async function guardar(){
     else{toast('Error al actualizar: '+(res.error||''),'warn')}
   } else {
     const res=await apiPost({action:'addTurno',turno:nu});
-    if(res.ok){toast('Turno guardado ✓','ok')}
-    else{toast('Error al guardar: '+(res.error||''),'warn')}
+    if(res.ok){
+      toast('Turno guardado ✓','ok');
+      // Si se cobró la deuda anterior, limpiarla en todos los turnos del paciente
+      if(_deudaChecked && _deudaAcumPac > 0){
+        await saldarDeudaPaciente(nu.pac);
+      }
+    } else { toast('Error al guardar: '+(res.error||''),'warn') }
   }
   await cargarTurnos();
 }
@@ -1177,10 +1268,7 @@ function elegir(p){
   const deudaAcum=TURNOS.filter(x=>x.pac.trim().toLowerCase()===p.nombre.trim().toLowerCase()
     &&(+x.deuda||0)>0 && String(x.id)!==String(rowId))
     .reduce((s,x)=>s+parseDeuda(x.deuda),0);
-  const el=document.getElementById('deudaPrevia');
-  if(el) el.innerHTML=deudaAcum>0
-    ?`<span style="color:#f87171;font-size:12px">Deuda acumulada: <b>${fmt$(deudaAcum)}</b></span>`
-    :`<span style="color:#4ade80;font-size:12px">Sin deuda previa ✓</span>`;
+  mostrarDeudaCheck(p.nombre, document.getElementById('eIdx').value);
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -1280,6 +1368,21 @@ function debugDeudas(){
   console.log('Total deuda calculada:', total);
   calcSaldos();
   alert('Revisá la consola (F12). Turnos con deuda: '+con.length+'. Total: $'+total.toLocaleString('es-AR'));
+}
+
+
+// Pone deuda=0 en todos los turnos anteriores del paciente
+async function saldarDeudaPaciente(pacNombre){
+  const turnos = TURNOS.filter(x =>
+    x.pac.trim().toLowerCase() === pacNombre.trim().toLowerCase()
+    && parseDeuda(x.deuda) > 0
+    && x.id
+  );
+  for(const t of turnos){
+    const actualizado = {...t, deuda: 0};
+    await apiPost({action:'updateTurno', id: String(t.id), turno: actualizado});
+  }
+  toast(`Deuda de ${pacNombre} saldada ✓`, 'ok');
 }
 
 function calcSaldos(){
