@@ -1144,25 +1144,27 @@ function renderTabla(){
 function goP(p){pg=p;renderTabla()}
 
 // ── Modal ────────────────────────────────────────────────────────────────────
-function openModal(t=null,idx=-1){
-  document.getElementById('eIdx').value = (idx !== undefined && idx !== null) ? idx : -1;
-  document.getElementById('modalTit').innerHTML=idx>=0?'<i class="bi bi-pencil-fill me-2" style="color:#a78bfa"></i>Editar turno':'<i class="bi bi-calendar-plus me-2" style="color:#a78bfa"></i>Nuevo turno';
-  const hoy=new Date();
-  // date input usa YYYY-MM-DD; si t.fecha viene en DD/MM/YYYY la convertimos
+function openModal(t=null, rowId=null){
+  // rowId = número de fila en planilla (string) o null para nuevo turno
+  const esEdicion = rowId !== null && rowId !== '-1' && rowId !== -1;
+  document.getElementById('eIdx').value = esEdicion ? String(rowId) : '-1';
+  document.getElementById('modalTit').innerHTML = esEdicion
+    ? '<i class="bi bi-pencil-fill me-2" style="color:#a78bfa"></i>Editar turno'
+    : '<i class="bi bi-calendar-plus me-2" style="color:#a78bfa"></i>Nuevo turno';
+  const hoy = new Date();
   const fechaObj = t ? pF(t.fecha) : hoy;
   document.getElementById('mFe').value = toISO(fechaObj || hoy);
-  document.getElementById('mHo').value=t?t.hora:'';
-  document.getElementById('mPa').value=t?t.pac:'';
-  document.getElementById('mTe').value=t?t.tel:'';
-  document.getElementById('mMo').value=t?t.monto:'';
-  document.getElementById('mOb').value=t?t.obs:'';
-  document.getElementById('mDe').value=t?parseDeuda(t.deuda):'';
-  // Mostrar checkbox de deuda previa
-  const rowIdActual = document.getElementById('eIdx').value;
-  mostrarDeudaCheck(t ? t.pac : null, rowIdActual);
+  document.getElementById('mHo').value  = t ? normHora(t.hora) : '';
+  document.getElementById('mPa').value  = t ? t.pac : '';
+  document.getElementById('mTe').value  = t ? t.tel : '';
+  document.getElementById('mMo').value  = t ? t.monto : '';
+  document.getElementById('mOb').value  = t ? t.obs : '';
+  document.getElementById('mDe').value  = t ? parseDeuda(t.deuda) : '';
+  selV('mMt', t ? t.motivo : '');
+  selV('mMe', t ? t.metodo : '');
+  setEst(t ? t.estado : 'Confirmado');
+  mostrarDeudaCheck(t ? t.pac : null, esEdicion ? String(rowId) : null);
   _montoOriginal = parseFloat(document.getElementById('mMo').value) || 0;
-  selV('mMt',t?t.motivo:'');selV('mMe',t?t.metodo:'');
-  setEst(t?t.estado:'Confirmado');
   document.getElementById('modalOverlay').classList.add('open');
 }
 function closeModal(){
@@ -1173,7 +1175,12 @@ function closeModal(){
   if(wrap){wrap.classList.remove('checked','visible');}
   if(box) box.innerHTML='';
 }
-function editT(i){openModal(TURNOS[i], TURNOS[i].id || i)}
+function editT(i){
+  const t = TURNOS[i];
+  const rowId = (t.id !== undefined && t.id !== null && t.id !== '') ? String(t.id) : null;
+  if(!rowId){ toast('Este turno no tiene ID. Recargá la página.','warn'); return; }
+  openModal(t, rowId);
+}
 async function delT(i){
   const t=TURNOS[i];
   if(!confirm(`¿Eliminar el turno de ${t.pac} (${t.fecha} ${t.hora})?`))return;
@@ -1191,22 +1198,18 @@ function setEst(e){
     c.classList.remove('sel');
     if(c.classList.contains(cls))c.classList.add('sel');
   });
-  // Si el estado salda deuda → limpiar campo deuda y ocultar checkbox
-  const salda=['Pagado','Presente'].includes(e);
-  const mDe=document.getElementById('mDe');
+  // Solo manejar visibilidad del checkbox — NO tocar mDe ni mMo
+  const salda = e === 'Pagado';
   const wrap=document.getElementById('deudaCheckWrap');
   const box=document.getElementById('deudaCheckbox');
   if(salda){
-    // Solo limpiar el campo deuda y ocultar el checkbox
-    // NO tocar el monto — si la deuda ya estaba sumada, quedó bien
-    if(mDe) mDe.value=0;
+    // Ocultar checkbox (la deuda se fuerza a 0 al guardar)
     if(wrap) wrap.classList.remove('visible','checked');
     if(box)  box.innerHTML='';
     _deudaChecked=false;
   } else {
-    // Volvió a un estado no-pagado: mostrar checkbox si hay deuda previa
-    const pa=document.getElementById('mPa').value;
-    if(pa && _deudaAcumPac>0 && wrap) wrap.classList.add('visible');
+    // Volvió a estado no-pagado: mostrar checkbox si hay deuda previa
+    if(wrap && _deudaAcumPac>0) wrap.classList.add('visible');
   }
 }
 async function guardar(){
@@ -1220,33 +1223,38 @@ async function guardar(){
   if(!ho){toast('Seleccioná la hora','warn');return}
   if(!pa){toast('Ingresá el paciente','warn');return}
   const _estado = document.getElementById('mEs').value||'Confirmado';
-  // Si el turno está pagado o presente, la deuda se cancela automáticamente
-  const _estadoSalda = ['Pagado','Presente'].includes(_estado);
+  const _estadoSalda = _estado === 'Pagado';
   const _deudaInput  = parseFloat(document.getElementById('mDe').value)||0;
+  const _montoFinal  = parseFloat(document.getElementById('mMo').value)||0;
+  // Capturar estado del checkbox ANTES de closeModal (que lo resetea)
+  const _cobrandoDeuda = _deudaChecked;
+  const _deudaAcumSnap = _deudaAcumPac;
   const nu={fecha:fe,hora:ho,pac:pa,tel:document.getElementById('mTe').value.trim(),
-    motivo:document.getElementById('mMt').value,monto:parseFloat(document.getElementById('mMo').value)||0,
+    motivo:document.getElementById('mMt').value,
+    monto: _montoFinal,
     metodo:document.getElementById('mMe').value,estado:_estado,
     obs:document.getElementById('mOb').value.trim(),
+    // Si estado salda → deuda=0; si no → leer campo mDe
     deuda: _estadoSalda ? 0 : _deudaInput};
   const eId=document.getElementById('eIdx').value;
   closeModal();
   showLoading(true);
   if(eId && eId!=='-1'){
-    // Editar: el eIdx ahora guarda el ID del turno
+    // ── EDITAR turno existente ──
     const res=await apiPost({action:'updateTurno',id:eId,turno:nu});
     if(res.ok){
       toast('Turno actualizado ✓','ok');
-      // Si quedó como Pagado/Presente, saldar todas las deudas previas del paciente
-      if(_estadoSalda){
-        await saldarDeudaPaciente(nu.pac, eId);
-      }
+      // Solo saldar previos si está Pagado/Presente (el propio turno queda excluido por eId)
+      if(_estadoSalda) await saldarDeudaPaciente(nu.pac, eId); // Solo Pagado salda
     } else { toast('Error al actualizar: '+(res.error||''),'warn') }
   } else {
+    // ── NUEVO turno ──
     const res=await apiPost({action:'addTurno',turno:nu});
     if(res.ok){
       toast('Turno guardado ✓','ok');
-      // Si se cobró la deuda anterior, limpiarla en todos los turnos del paciente
-      if(_deudaChecked && _deudaAcumPac > 0){
+      // Solo saldar previos si se tildó el checkbox de deuda anterior
+      // (el turno nuevo no está en TURNOS todavía, así que no hay riesgo de pisarlo)
+      if(_cobrandoDeuda && _deudaAcumSnap > 0){
         await saldarDeudaPaciente(nu.pac, null);
       }
     } else { toast('Error al guardar: '+(res.error||''),'warn') }
