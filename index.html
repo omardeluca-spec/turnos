@@ -1186,12 +1186,28 @@ async function delT(i){
 function selV(id,v){const s=document.getElementById(id);for(let i=0;i<s.options.length;i++)if(s.options[i].value===v){s.selectedIndex=i;return}; s.selectedIndex=0}
 function setEst(e){
   document.getElementById('mEs').value=e;
-  // Generar el nombre de clase: "No pagado" → "chip-Nopagado", "Pagado" → "chip-Pagado"
   const cls='chip-'+e.replace(/\s+/g,'');
   document.querySelectorAll('.chip').forEach(c=>{
     c.classList.remove('sel');
     if(c.classList.contains(cls))c.classList.add('sel');
   });
+  // Si el estado salda deuda → limpiar campo deuda y ocultar checkbox
+  const salda=['Pagado','Presente'].includes(e);
+  const mDe=document.getElementById('mDe');
+  const wrap=document.getElementById('deudaCheckWrap');
+  const box=document.getElementById('deudaCheckbox');
+  if(salda){
+    // Solo limpiar el campo deuda y ocultar el checkbox
+    // NO tocar el monto — si la deuda ya estaba sumada, quedó bien
+    if(mDe) mDe.value=0;
+    if(wrap) wrap.classList.remove('visible','checked');
+    if(box)  box.innerHTML='';
+    _deudaChecked=false;
+  } else {
+    // Volvió a un estado no-pagado: mostrar checkbox si hay deuda previa
+    const pa=document.getElementById('mPa').value;
+    if(pa && _deudaAcumPac>0 && wrap) wrap.classList.add('visible');
+  }
 }
 async function guardar(){
   const feISO=document.getElementById('mFe').value.trim();
@@ -1203,26 +1219,35 @@ async function guardar(){
   const fe=fF(feObj);
   if(!ho){toast('Seleccioná la hora','warn');return}
   if(!pa){toast('Ingresá el paciente','warn');return}
+  const _estado = document.getElementById('mEs').value||'Confirmado';
+  // Si el turno está pagado o presente, la deuda se cancela automáticamente
+  const _estadoSalda = ['Pagado','Presente'].includes(_estado);
+  const _deudaInput  = parseFloat(document.getElementById('mDe').value)||0;
   const nu={fecha:fe,hora:ho,pac:pa,tel:document.getElementById('mTe').value.trim(),
     motivo:document.getElementById('mMt').value,monto:parseFloat(document.getElementById('mMo').value)||0,
-    metodo:document.getElementById('mMe').value,estado:document.getElementById('mEs').value||'Confirmado',
+    metodo:document.getElementById('mMe').value,estado:_estado,
     obs:document.getElementById('mOb').value.trim(),
-    deuda:parseFloat(document.getElementById('mDe').value)||0};
+    deuda: _estadoSalda ? 0 : _deudaInput};
   const eId=document.getElementById('eIdx').value;
   closeModal();
   showLoading(true);
   if(eId && eId!=='-1'){
     // Editar: el eIdx ahora guarda el ID del turno
     const res=await apiPost({action:'updateTurno',id:eId,turno:nu});
-    if(res.ok){toast('Turno actualizado ✓','ok')}
-    else{toast('Error al actualizar: '+(res.error||''),'warn')}
+    if(res.ok){
+      toast('Turno actualizado ✓','ok');
+      // Si quedó como Pagado/Presente, saldar todas las deudas previas del paciente
+      if(_estadoSalda){
+        await saldarDeudaPaciente(nu.pac, eId);
+      }
+    } else { toast('Error al actualizar: '+(res.error||''),'warn') }
   } else {
     const res=await apiPost({action:'addTurno',turno:nu});
     if(res.ok){
       toast('Turno guardado ✓','ok');
       // Si se cobró la deuda anterior, limpiarla en todos los turnos del paciente
       if(_deudaChecked && _deudaAcumPac > 0){
-        await saldarDeudaPaciente(nu.pac);
+        await saldarDeudaPaciente(nu.pac, null);
       }
     } else { toast('Error al guardar: '+(res.error||''),'warn') }
   }
@@ -1372,11 +1397,13 @@ function debugDeudas(){
 
 
 // Pone deuda=0 en todos los turnos anteriores del paciente
-async function saldarDeudaPaciente(pacNombre){
+async function saldarDeudaPaciente(pacNombre, rowIdExcluir){
+  // Saldar todas las deudas previas del paciente (excepto el turno actual si se pasa id)
   const turnos = TURNOS.filter(x =>
     x.pac.trim().toLowerCase() === pacNombre.trim().toLowerCase()
     && parseDeuda(x.deuda) > 0
     && x.id
+    && (!rowIdExcluir || String(x.id) !== String(rowIdExcluir))
   );
   for(const t of turnos){
     const actualizado = {...t, deuda: 0};
