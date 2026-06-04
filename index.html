@@ -534,6 +534,88 @@ input[type="date"].inp::-webkit-calendar-picker-indicator:hover {
 .deuda-check-txt .dct-monto { color: #f87171; font-weight: 800; font-size: 15px; }
 .deuda-check-wrap.checked .deuda-check-txt .dct-monto { color: #4ade80; }
 .deuda-check-txt .dct-sub { font-size: 11.5px; color: #7d8590; margin-top: 1px; }
+
+/* ── DEUDA SALDADA (verde) ─────────────────────────────── */
+.deuda-saldada {
+  display:inline-flex;align-items:center;gap:4px;
+  background:rgba(74,222,128,.12);border:1px solid rgba(74,222,128,.25);
+  color:#4ade80;border-radius:6px;padding:2px 8px;
+  font-size:11.5px;font-weight:700;white-space:nowrap;
+}
+/* ── PANEL DEUDA EN MODAL ──────────────────────────────── */
+.deuda-panel {
+  border-radius:10px;padding:14px;margin-top:6px;
+  border:1px solid transparent;transition:all .2s;
+}
+.deuda-panel.panel-rojo {
+  background:rgba(248,113,113,.07);border-color:rgba(248,113,113,.2);
+}
+.deuda-panel.panel-verde {
+  background:rgba(74,222,128,.07);border-color:rgba(74,222,128,.2);
+}
+/* ── TOGGLE SWITCH ─────────────────────────────────────── */
+.toggle-wrap {
+  display:flex;align-items:center;gap:10px;cursor:pointer;
+  user-select:none;-webkit-tap-highlight-color:transparent;
+  padding:8px 10px;border-radius:8px;transition:background .15s;
+}
+.toggle-wrap:hover { background:rgba(255,255,255,.04); }
+.toggle-track {
+  width:38px;height:22px;border-radius:11px;
+  background:#30363d;transition:background .2s;flex-shrink:0;
+  position:relative;
+}
+.toggle-track.on { background:#7c3aed; }
+.toggle-thumb {
+  width:16px;height:16px;border-radius:50%;background:#fff;
+  position:absolute;top:3px;left:3px;transition:left .2s;
+  box-shadow:0 1px 3px rgba(0,0,0,.3);
+}
+.toggle-track.on .toggle-thumb { left:19px; }
+.toggle-lbl { font-size:13.5px;font-weight:600;color:#c9d1d9; }
+.toggle-sub { font-size:11.5px;color:#7d8590;margin-top:1px; }
+/* ── RESUMEN COBRO ─────────────────────────────────────── */
+.cobro-resumen {
+  background:#21262d;border:1px solid #30363d;border-radius:8px;
+  padding:10px 14px;margin-top:8px;display:none;
+}
+.cobro-resumen.visible { display:block; }
+.cobro-row { display:flex;justify-content:space-between;font-size:13px;padding:2px 0; }
+.cobro-row .cr-lbl { color:#7d8590; }
+.cobro-row .cr-val { font-weight:700;color:#f0f6fc; }
+.cobro-total { border-top:1px solid #30363d;margin-top:6px;padding-top:6px;
+  display:flex;justify-content:space-between;font-size:14px;font-weight:800; }
+.cobro-total .cr-lbl { color:#a78bfa; }
+.cobro-total .cr-val { color:#4ade80; }
+
+/* ── PACIENTES ───────────────────────────────────────────── */
+.pac-card {
+  background:#161b22;border:1px solid #30363d;border-radius:12px;
+  padding:16px;display:flex;align-items:center;gap:14px;
+  transition:border-color .18s;cursor:pointer;
+}
+.pac-card:hover { border-color:#7c3aed; }
+.pac-avatar {
+  width:44px;height:44px;border-radius:50%;
+  background:linear-gradient(135deg,#7c3aed,#a78bfa);
+  display:flex;align-items:center;justify-content:center;
+  font-size:16px;font-weight:800;color:#fff;flex-shrink:0;
+}
+.pac-info { flex:1;min-width:0; }
+.pac-nombre { font-size:15px;font-weight:700;color:#f0f6fc; }
+.pac-meta { font-size:12px;color:#7d8590;margin-top:2px; }
+.pac-deuda-badge {
+  font-size:12px;font-weight:700;padding:3px 9px;border-radius:6px;
+  background:rgba(248,113,113,.15);border:1px solid rgba(248,113,113,.25);color:#f87171;
+}
+.pac-grid {
+  display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px;
+}
+/* Modal paciente */
+.modal-pac-box {
+  background:#161b22;border:1px solid #30363d;border-radius:16px;
+  width:480px;max-width:95vw;max-height:90vh;overflow-y:auto;
+}
 </style>
 </head>
 <body>
@@ -548,6 +630,9 @@ input[type="date"].inp::-webkit-calendar-picker-indicator:hover {
     <div class="nav-section">Gestión</div>
     <a class="nav-item active" onclick="goTo('turnos')">
       <i class="bi bi-calendar3"></i> Turnos
+    </a>
+    <a class="nav-item" onclick="goTo('pacientes')">
+      <i class="bi bi-people-fill"></i> Pacientes
     </a>
     <a class="nav-item" onclick="goTo('semana')">
       <i class="bi bi-grid-3x3-gap"></i> Semana
@@ -581,7 +666,11 @@ input[type="date"].inp::-webkit-calendar-picker-indicator:hover {
     <i class="bi bi-calendar3"></i>
     <span>Turnos</span>
   </div>
-  <div class="bn-item" id="bn-semana" onclick="goTo('semana')">
+  <div class="bn-item" id="bn-pacientes" onclick="goTo('pacientes')">
+    <i class="bi bi-people-fill"></i>
+    <span>Pacientes</span>
+  </div>
+  <div class="bn-item" id="bn-semana" onclick="goTo('semana')" style="display:none">
     <i class="bi bi-grid-3x3-gap"></i>
     <span>Semana</span>
   </div>
@@ -667,6 +756,75 @@ input[type="date"].inp::-webkit-calendar-picker-indicator:hover {
         <span style="font-size:13px;color:#7d8590" id="pgInfo"></span>
         <div id="pgBtns" style="display:flex;gap:4px;flex-wrap:wrap"></div>
       </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ═══════════════ PACIENTES ═══════════════════════════════════════════════ -->
+<div class="sec" id="sec-pacientes">
+  <div class="page-header">
+    <h2><i class="bi bi-people-fill me-2" style="color:#a78bfa"></i>Pacientes</h2>
+    <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+      <input class="inp" id="srchPac" placeholder="🔍 Buscar paciente..." style="width:220px" oninput="filtrarPacientes()">
+      <button onclick="importarPacientesFromTurnos()" style="background:#21262d;border:1px solid #30363d;border-radius:8px;padding:9px 14px;color:#8b949e;cursor:pointer;font-size:13px;display:inline-flex;align-items:center;gap:6px;font-family:'Inter',sans-serif" title="Importar pacientes del historial de turnos">
+        <i class="bi bi-cloud-download"></i> Importar historial
+      </button>
+      <button class="btn-primary" onclick="openModalPac()"><i class="bi bi-person-plus-fill"></i> Nuevo paciente</button>
+    </div>
+  </div>
+  <div class="page-content">
+    <div id="pacGrid" class="pac-grid"></div>
+  </div>
+</div>
+
+<!-- MODAL PACIENTE -->
+<div class="modal-overlay" id="modalPacOverlay" onclick="if(event.target===this)closePacModal()">
+  <div class="modal-pac-box">
+    <div class="modal-head">
+      <h3 id="modalPacTit"><i class="bi bi-person-plus-fill me-2" style="color:#a78bfa"></i>Nuevo paciente</h3>
+      <button class="btn-sm btn-ghost" onclick="closePacModal()"><i class="bi bi-x-lg"></i></button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="pacId" value="">
+      <div class="form-row">
+        <div class="form-group full">
+          <label class="form-label">Nombre completo</label>
+          <input class="inp" id="pNombre" placeholder="Nombre y apellido">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Teléfono</label>
+          <input class="inp" id="pTel" placeholder="1125608443">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Monto habitual ($)</label>
+          <input class="inp" type="number" id="pMonto" placeholder="0">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Motivo habitual</label>
+          <select class="inp" id="pMotivo">
+            <option value="">-- Motivo --</option>
+            <option>Sesion</option><option>Virtual</option><option>Vincular</option>
+            <option>Primera entrevista</option><option>Seguimiento</option><option>Otro</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Método habitual</label>
+          <select class="inp" id="pMetodo">
+            <option value="">-- Método --</option>
+            <option>Efectivo</option><option>Transferencia</option>
+          </select>
+        </div>
+        <div class="form-group full">
+          <label class="form-label">Notas</label>
+          <input class="inp" id="pNotas" placeholder="Observaciones del paciente...">
+        </div>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn-sm btn-ghost" onclick="closePacModal()">Cancelar</button>
+      <button class="btn-sm btn-danger" id="btnElimPac" onclick="eliminarPac()" style="display:none"><i class="bi bi-trash3-fill"></i> Eliminar</button>
+      <button class="btn-primary" onclick="guardarPac()"><i class="bi bi-check2-circle"></i> Guardar</button>
     </div>
   </div>
 </div>
@@ -806,7 +964,7 @@ input[type="date"].inp::-webkit-calendar-picker-indicator:hover {
         </div>
         <div class="form-group">
           <label class="form-label">Monto ($)</label>
-          <input class="inp" type="number" id="mMo" placeholder="0">
+          <input class="inp" type="number" id="mMo" placeholder="0" oninput="recalcResumen()">
         </div>
         <div class="form-group">
           <label class="form-label">Motivo</label>
@@ -839,21 +997,66 @@ input[type="date"].inp::-webkit-calendar-picker-indicator:hover {
           <input class="inp" id="mOb" placeholder="Notas internas...">
         </div>
         <div class="form-group full" id="deudaGroup">
-          <!-- Checkbox: cobrar deuda anterior -->
-          <div class="deuda-check-wrap" id="deudaCheckWrap" onclick="toggleDeudaCheck()">
-            <div class="deuda-checkbox" id="deudaCheckbox"></div>
-            <div class="deuda-check-txt">
-              <div class="dct-lbl">Cobrar deuda anterior</div>
-              <div class="dct-monto" id="deudaCheckMonto">$0</div>
-              <div class="dct-sub">Se suma al monto de esta sesión</div>
+
+          <!-- DEUDA PREVIA: aparece si el paciente tiene deuda acumulada -->
+          <div id="prevDeudaPanel" style="display:none;margin-bottom:10px">
+            <div class="deuda-panel panel-rojo" id="prevDeudaPanelInner">
+              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+                <span style="font-size:12px;font-weight:700;color:#f87171;text-transform:uppercase;letter-spacing:.06em">💸 Deuda anterior</span>
+                <span style="font-size:16px;font-weight:800;color:#f87171" id="prevDeudaMonto">$0</span>
+              </div>
+              <!-- Toggle: cobrar deuda previa -->
+              <div class="toggle-wrap" onclick="toggleCobrarDeuda()">
+                <div class="toggle-track" id="toggleCobrarTrack"><div class="toggle-thumb"></div></div>
+                <div>
+                  <div class="toggle-lbl">Cobrar deuda anterior</div>
+                  <div class="toggle-sub">Se suma al total de hoy</div>
+                </div>
+              </div>
             </div>
           </div>
-          <!-- Campo deuda nueva que queda pendiente -->
-          <label class="form-label" style="display:flex;align-items:center;gap:8px;margin-top:10px">
-            <span>💸 Nueva deuda pendiente ($)</span>
-            <span style="font-size:10px;color:#484f58;text-transform:none;font-weight:400">— lo que queda sin pagar de esta sesión</span>
-          </label>
-          <input class="inp" type="number" id="mDe" placeholder="0" min="0">
+
+          <!-- TOGGLE: Presente sin pago → pasar monto a deuda -->
+          <div id="presenteDeudaWrap" style="display:none;margin-bottom:10px">
+            <div class="deuda-panel panel-rojo">
+              <div class="toggle-wrap" onclick="togglePresenteDeuda()">
+                <div class="toggle-track" id="togglePresenteTrack"><div class="toggle-thumb"></div></div>
+                <div>
+                  <div class="toggle-lbl">No abonó — pasar monto a deuda</div>
+                  <div class="toggle-sub" id="presenteDeudaSub">El monto de hoy queda como deuda pendiente</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- TOGGLE: Pago parcial -->
+          <div id="parcialWrap" style="display:none;margin-bottom:10px">
+            <div class="deuda-panel panel-rojo">
+              <div class="toggle-wrap" onclick="toggleParcial()">
+                <div class="toggle-track" id="toggleParcialTrack"><div class="toggle-thumb"></div></div>
+                <div>
+                  <div class="toggle-lbl">Pago parcial</div>
+                  <div class="toggle-sub">Abonó menos de lo que debe</div>
+                </div>
+              </div>
+              <div id="parcialInputWrap" style="display:none;margin-top:10px">
+                <label class="form-label">Monto que abonó hoy ($)</label>
+                <input class="inp" type="number" id="mParcial" placeholder="0" min="0" oninput="recalcResumen()">
+              </div>
+            </div>
+          </div>
+
+          <!-- RESUMEN de lo que va a quedar registrado -->
+          <div class="cobro-resumen" id="cobroResumen">
+            <div class="cobro-row"><span class="cr-lbl">Consulta del día</span><span class="cr-val" id="rConsulta">$0</span></div>
+            <div class="cobro-row" id="rDeudaRow" style="display:none"><span class="cr-lbl">Deuda anterior</span><span class="cr-val" id="rDeuda" style="color:#f87171">$0</span></div>
+            <div class="cobro-row" id="rParcialRow" style="display:none"><span class="cr-lbl">Pago parcial</span><span class="cr-val" id="rParcial" style="color:#fbbf24">$0</span></div>
+            <div class="cobro-total"><span class="cr-lbl">💰 Total cobrado hoy</span><span class="cr-val" id="rTotal">$0</span></div>
+            <div class="cobro-row" id="rNuevaDeudaRow" style="display:none;margin-top:4px"><span class="cr-lbl" style="color:#f87171">⚠️ Nueva deuda</span><span class="cr-val" id="rNuevaDeuda" style="color:#f87171">$0</span></div>
+          </div>
+
+          <!-- Campo deuda oculto (se calcula automáticamente) -->
+          <input type="hidden" id="mDe" value="0">
         </div>
       </div>
     </div>
@@ -996,6 +1199,7 @@ function goTo(id){
   if(id==='semana') renderSemana();
   if(id==='cobros') renderCobros();
   if(id==='analisis') renderAnalisis();
+  if(id==='pacientes') renderPacientes();
   // Scroll al top en mobile
   window.scrollTo({top:0,behavior:'smooth'});
 }
@@ -1010,51 +1214,334 @@ function toggleMobFilters(){
 // TURNOS
 // ═══════════════════════════════════════════════════════════════════════════
 
-// ── CHECKBOX DEUDA PREVIA ─────────────────────────────────────────
-let _deudaAcumPac = 0;   // deuda acumulada del paciente actual
-let _deudaChecked = false;
-let _montoOriginal = 0;  // monto de la sesión sin deuda
 
-function toggleDeudaCheck(){
-  _deudaChecked = !_deudaChecked;
-  const wrap = document.getElementById('deudaCheckWrap');
-  const box  = document.getElementById('deudaCheckbox');
-  const mo   = document.getElementById('mMo');
-  if(_deudaChecked){
-    wrap.classList.add('checked');
-    box.innerHTML = '✓';
-    // Guardar monto original y sumar la deuda
-    _montoOriginal = parseFloat(mo.value) || 0;
-    mo.value = _montoOriginal + _deudaAcumPac;
+// ══════════════════════════════════════════════════════════════════
+// LÓGICA DE DEUDA EN MODAL
+// ══════════════════════════════════════════════════════════════════
+// Estado del modal
+let _deudaAcumPac  = 0;   // deuda acumulada del paciente
+let _cobrarDeuda   = false; // toggle: cobrar deuda previa
+let _presenteDeuda = false; // toggle: presente sin pago → a deuda
+let _parcial       = false; // toggle: pago parcial
+let _montoOriginal = 0;
+
+// ── Helpers toggle visual ─────────────────────────────────────────
+function setToggle(trackId, on){
+  const t = document.getElementById(trackId);
+  if(!t) return;
+  if(on) t.classList.add('on'); else t.classList.remove('on');
+}
+
+// ── Mostrar/ocultar secciones según estado ────────────────────────
+function actualizarPaneles(){
+  const estado = document.getElementById('mEs').value;
+  const hayDeuda = _deudaAcumPac > 0;
+  const esPagado   = estado === 'Pagado';
+  const esPresente = estado === 'Presente';
+
+  // Panel deuda previa: siempre visible si hay deuda acumulada
+  const pp = document.getElementById('prevDeudaPanel');
+  if(pp) pp.style.display = hayDeuda ? 'block' : 'none';
+
+  // Toggle "no abonó": solo si estado es Presente
+  const pw = document.getElementById('presenteDeudaWrap');
+  if(pw) pw.style.display = esPresente ? 'block' : 'none';
+  if(!esPresente){ _presenteDeuda = false; setToggle('togglePresenteTrack', false); }
+
+  // Toggle pago parcial: visible si Pagado o Presente con deuda
+  const parcialW = document.getElementById('parcialWrap');
+  if(parcialW) parcialW.style.display = (esPagado || esPresente) ? 'block' : 'none';
+  if(!esPagado && !esPresente){ _parcial = false; setToggle('toggleParcialTrack', false); document.getElementById('parcialInputWrap').style.display='none'; }
+
+  // Si Pagado: auto-tildar cobrar deuda si hay deuda
+  if(esPagado && hayDeuda && !_cobrarDeuda){
+    _cobrarDeuda = true;
+    setToggle('toggleCobrarTrack', true);
+  }
+
+  recalcResumen();
+}
+
+// ── RECALCULAR resumen y campos ocultos ───────────────────────────
+function recalcResumen(){
+  const monto   = parseFloat(document.getElementById('mMo').value) || 0;
+  const parcialMonto = parseFloat(document.getElementById('mParcial')?.value) || 0;
+  const estado  = document.getElementById('mEs').value;
+  const esPagado   = estado === 'Pagado';
+  const esPresente = estado === 'Presente';
+
+  let cobradoHoy = 0;
+  let nuevaDeuda = 0;
+
+  if(_parcial){
+    // Pago parcial
+    const totalDebido = monto + (_cobrarDeuda ? _deudaAcumPac : 0);
+    cobradoHoy = Math.min(parcialMonto, totalDebido);
+    nuevaDeuda = Math.max(0, totalDebido - cobradoHoy);
+  } else if(_presenteDeuda && esPresente){
+    // Presente sin pago
+    cobradoHoy = 0;
+    nuevaDeuda = monto;
+  } else if(esPagado){
+    // Pagado completo: muestra consulta + deuda cobrada
+    cobradoHoy = monto + (_cobrarDeuda ? _deudaAcumPac : 0);
+    nuevaDeuda = 0;
   } else {
-    wrap.classList.remove('checked');
-    box.innerHTML = '';
-    // Restaurar monto original
-    mo.value = _montoOriginal;
+    cobradoHoy = monto;
+    nuevaDeuda = 0;
   }
+
+  // Solo actualizar resumen visual — NO tocar mMo ni mDe
+  const res = document.getElementById('cobroResumen');
+  const mostrarRes = esPagado || esPresente || _cobrarDeuda || _parcial;
+  if(res) res.classList.toggle('visible', mostrarRes);
+
+  const set = (id, val) => { const el=document.getElementById(id); if(el) el.textContent=val; };
+  const show = (id, vis) => { const el=document.getElementById(id); if(el) el.style.display=vis?'flex':'none'; };
+
+  set('rConsulta', fmt$(monto));
+  show('rDeudaRow', _cobrarDeuda && _deudaAcumPac>0);
+  set('rDeuda', fmt$(_deudaAcumPac));
+  show('rParcialRow', _parcial && parcialMonto>0);
+  set('rParcial', fmt$(parcialMonto));
+  set('rTotal', fmt$(cobradoHoy));
+  show('rNuevaDeudaRow', nuevaDeuda>0);
+  set('rNuevaDeuda', fmt$(nuevaDeuda));
 }
 
-function mostrarDeudaCheck(pacNombre, rowIdExcluir){
-  _deudaChecked = false;
-  _deudaAcumPac = 0;
-  const wrap = document.getElementById('deudaCheckWrap');
-  const box  = document.getElementById('deudaCheckbox');
-  if(box) box.innerHTML = '';
-  if(wrap) wrap.classList.remove('checked');
-  if(!pacNombre){ if(wrap) wrap.classList.remove('visible'); return; }
-  const acum = TURNOS
-    .filter(x => x.pac.trim().toLowerCase() === pacNombre.trim().toLowerCase()
-      && parseDeuda(x.deuda) > 0
-      && String(x.id) !== String(rowIdExcluir))
-    .reduce((s,x) => s + parseDeuda(x.deuda), 0);
-  _deudaAcumPac = acum;
-  const lbl = document.getElementById('deudaCheckMonto');
-  if(lbl) lbl.textContent = fmt$(acum);
-  if(wrap){
-    if(acum > 0) wrap.classList.add('visible');
-    else wrap.classList.remove('visible');
-  }
+// ── Toggles ───────────────────────────────────────────────────────
+function toggleCobrarDeuda(){
+  _cobrarDeuda = !_cobrarDeuda;
+  setToggle('toggleCobrarTrack', _cobrarDeuda);
+  recalcResumen();
 }
+function togglePresenteDeuda(){
+  _presenteDeuda = !_presenteDeuda;
+  setToggle('togglePresenteTrack', _presenteDeuda);
+  if(_presenteDeuda){ _parcial=false; setToggle('toggleParcialTrack',false); document.getElementById('parcialInputWrap').style.display='none'; }
+  recalcResumen();
+}
+function toggleParcial(){
+  _parcial = !_parcial;
+  setToggle('toggleParcialTrack', _parcial);
+  const wrap = document.getElementById('parcialInputWrap');
+  if(wrap) wrap.style.display = _parcial ? 'block' : 'none';
+  if(_parcial){ _presenteDeuda=false; setToggle('togglePresenteTrack',false); }
+  recalcResumen();
+}
+
+// ── Inicializar panel deuda al abrir modal ────────────────────────
+function initDeudaModal(pacNombre, rowIdExcluir){
+  // Reset
+  _cobrarDeuda=false; _presenteDeuda=false; _parcial=false; _deudaAcumPac=0;
+  setToggle('toggleCobrarTrack',false);
+  setToggle('togglePresenteTrack',false);
+  setToggle('toggleParcialTrack',false);
+  const piw = document.getElementById('parcialInputWrap');
+  if(piw) piw.style.display='none';
+  const mParcial = document.getElementById('mParcial');
+  if(mParcial) mParcial.value='';
+  const mDe = document.getElementById('mDe');
+  if(mDe) mDe.value='0';
+
+  if(!pacNombre){ actualizarPaneles(); return; }
+
+  // Calcular deuda acumulada del paciente
+  const acum = TURNOS.filter(x=>
+    x.pac.trim().toLowerCase()===pacNombre.trim().toLowerCase()
+    && parseDeuda(x.deuda)>0
+    && (!rowIdExcluir || String(x.id)!==String(rowIdExcluir))
+  ).reduce((s,x)=>s+parseDeuda(x.deuda),0);
+
+  _deudaAcumPac = acum;
+  const lbl = document.getElementById('prevDeudaMonto');
+  if(lbl) lbl.textContent = fmt$(acum);
+
+  actualizarPaneles();
+}
+
+// ── Saldar deudas previas en planilla (marcar como saldado) ───────
+async function saldarDeudaPaciente(pacNombre, rowIdExcluir){
+  const turnos = TURNOS.filter(x=>
+    x.pac.trim().toLowerCase()===pacNombre.trim().toLowerCase()
+    && parseDeuda(x.deuda)>0
+    && x.id
+    && (!rowIdExcluir || String(x.id)!==String(rowIdExcluir))
+  );
+  for(const t of turnos){
+    // deuda negativa = saldada (se muestra en verde)
+    const act = {...t, deuda: -(parseDeuda(t.deuda)) };
+    await apiPost({action:'updateTurno', id:String(t.id), turno:act});
+  }
+  if(turnos.length) toast(`Deuda de ${pacNombre} saldada ✓`, 'ok');
+}
+
+
+
+// ══════════════════════════════════════════════════════════════════
+// PACIENTES — se guardan en localStorage del navegador
+// ══════════════════════════════════════════════════════════════════
+let PACIENTES = [];
+
+function loadPacientes(){
+  try { PACIENTES = JSON.parse(localStorage.getItem('sac_pacientes')||'[]'); }
+  catch(e){ PACIENTES=[]; }
+}
+function savePacientes(){
+  localStorage.setItem('sac_pacientes', JSON.stringify(PACIENTES));
+}
+
+// Calcular deuda de un paciente desde TURNOS
+function deudaPaciente(nombre){
+  return TURNOS.filter(t=>
+    t.pac.trim().toLowerCase()===nombre.trim().toLowerCase()
+    && parseDeuda(t.deuda)>0
+  ).reduce((s,t)=>s+parseDeuda(t.deuda),0);
+}
+
+function renderPacientes(){
+  loadPacientes();
+  const q = document.getElementById('srchPac')?.value.toLowerCase()||'';
+  const pacs = PACIENTES.filter(p=>!q||p.nombre.toLowerCase().includes(q));
+  const el = document.getElementById('pacGrid');
+  if(!el) return;
+  if(!pacs.length){
+    el.innerHTML=`<div style="grid-column:1/-1;text-align:center;padding:60px;color:#484f58">
+      <i class="bi bi-people" style="font-size:2.5rem;display:block;margin-bottom:12px"></i>
+      <div style="font-size:15px;margin-bottom:8px">No hay pacientes cargados</div>
+      <div style="font-size:13px">Hacé clic en "Nuevo paciente" para agregar</div>
+    </div>`;
+    return;
+  }
+  el.innerHTML = pacs.map(p=>{
+    const ini = p.nombre.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
+    const deuda = deudaPaciente(p.nombre);
+    const turnos = TURNOS.filter(t=>t.pac.trim().toLowerCase()===p.nombre.trim().toLowerCase()).length;
+    return `<div class="pac-card" onclick="openModalPac('${p.id}')">
+      <div class="pac-avatar">${ini}</div>
+      <div class="pac-info">
+        <div class="pac-nombre">${p.nombre}</div>
+        <div class="pac-meta">
+          ${p.tel?`📱 ${p.tel} · `:''}${p.motivo||''}${p.monto?` · ${fmt$(p.monto)}`:''}
+          ${p.metodo?` · ${p.metodo}`:''}
+        </div>
+        <div class="pac-meta" style="margin-top:3px">
+          📋 ${turnos} turno${turnos!==1?'s':''}
+          ${deuda>0?` <span class="pac-deuda-badge">💸 ${fmt$(deuda)}</span>`:''}
+        </div>
+      </div>
+      <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px">
+        <button class="btn-sm btn-primary" style="font-size:11px;padding:4px 10px"
+          onclick="event.stopPropagation();nuevoTurnoPac('${p.id}')">
+          <i class="bi bi-calendar-plus"></i> Turno
+        </button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function filtrarPacientes(){ renderPacientes(); }
+
+function openModalPac(id=null){
+  const p = id ? PACIENTES.find(x=>x.id===id) : null;
+  document.getElementById('pacId').value = id||'';
+  document.getElementById('modalPacTit').innerHTML = p
+    ? '<i class="bi bi-pencil-fill me-2" style="color:#a78bfa"></i>Editar paciente'
+    : '<i class="bi bi-person-plus-fill me-2" style="color:#a78bfa"></i>Nuevo paciente';
+  document.getElementById('pNombre').value  = p?.nombre||'';
+  document.getElementById('pTel').value     = p?.tel||'';
+  document.getElementById('pMonto').value   = p?.monto||'';
+  document.getElementById('pNotas').value   = p?.notas||'';
+  selV('pMotivo', p?.motivo||'');
+  selV('pMetodo', p?.metodo||'');
+  const btnElim = document.getElementById('btnElimPac');
+  if(btnElim) btnElim.style.display = p ? 'inline-flex' : 'none';
+  document.getElementById('modalPacOverlay').classList.add('open');
+}
+
+function closePacModal(){
+  document.getElementById('modalPacOverlay').classList.remove('open');
+}
+
+function guardarPac(){
+  const nombre = document.getElementById('pNombre').value.trim();
+  if(!nombre){ toast('Ingresá el nombre del paciente','warn'); return; }
+  const id = document.getElementById('pacId').value;
+  const pac = {
+    id: id || 'p_'+Date.now(),
+    nombre,
+    tel:    document.getElementById('pTel').value.trim(),
+    monto:  parseFloat(document.getElementById('pMonto').value)||0,
+    motivo: document.getElementById('pMotivo').value,
+    metodo: document.getElementById('pMetodo').value,
+    notas:  document.getElementById('pNotas').value.trim(),
+  };
+  loadPacientes();
+  if(id){
+    const idx = PACIENTES.findIndex(p=>p.id===id);
+    if(idx>=0) PACIENTES[idx]=pac; else PACIENTES.push(pac);
+  } else {
+    PACIENTES.push(pac);
+  }
+  savePacientes();
+  closePacModal();
+  renderPacientes();
+  // También actualizar histPac para autocomplete de turnos
+  toast(id?'Paciente actualizado ✓':'Paciente agregado ✓','ok');
+}
+
+function eliminarPac(){
+  const id = document.getElementById('pacId').value;
+  if(!id) return;
+  const p = PACIENTES.find(x=>x.id===id);
+  if(!confirm(`¿Eliminar a ${p?.nombre} de la lista de pacientes?`)) return;
+  loadPacientes();
+  PACIENTES = PACIENTES.filter(x=>x.id!==id);
+  savePacientes();
+  closePacModal();
+  renderPacientes();
+  toast('Paciente eliminado','info');
+}
+
+function nuevoTurnoPac(id){
+  const p = PACIENTES.find(x=>x.id===id);
+  if(!p) return;
+  goTo('turnos');
+  // Pre-cargar datos del paciente en el modal
+  setTimeout(()=>{
+    openModal();
+    document.getElementById('mPa').value = p.nombre;
+    document.getElementById('mTe').value = p.tel||'';
+    if(p.monto) document.getElementById('mMo').value = p.monto;
+    selV('mMt', p.motivo);
+    selV('mMe', p.metodo);
+    initDeudaModal(p.nombre, null);
+  }, 50);
+}
+
+// Auto-importar pacientes desde historial de TURNOS (los que no están en PACIENTES)
+function importarPacientesFromTurnos(){
+  loadPacientes();
+  const existentes = new Set(PACIENTES.map(p=>p.nombre.trim().toLowerCase()));
+  const nuevos = {};
+  TURNOS.forEach(t=>{
+    const k = t.pac.trim().toLowerCase();
+    if(!k || existentes.has(k)) return;
+    if(!nuevos[k]) nuevos[k]={nombre:t.pac.trim(),tel:t.tel||'',monto:+t.monto||0,motivo:t.motivo||'',metodo:t.metodo||''};
+    else {
+      if(!nuevos[k].tel && t.tel) nuevos[k].tel=t.tel;
+      if(!nuevos[k].monto && t.monto) nuevos[k].monto=+t.monto;
+    }
+  });
+  const lista = Object.values(nuevos);
+  if(!lista.length){ toast('No hay pacientes nuevos para importar','info'); return; }
+  lista.forEach(p=>PACIENTES.push({id:'p_'+Date.now()+'_'+Math.random().toString(36).slice(2),
+    nombre:p.nombre,tel:p.tel,monto:p.monto,motivo:p.motivo,metodo:p.metodo,notas:''}));
+  savePacientes();
+  renderPacientes();
+  toast(`${lista.length} paciente${lista.length!==1?'s':''} importado${lista.length!==1?'s':''}✓`,'ok');
+}
+
 
 function init(){
   // Cargar desde API
@@ -1070,6 +1557,7 @@ function init(){
   // cargarTurnos() ya se llamó arriba — llama filtrar() internamente
   semHoy();
   initAnalisis();
+  loadPacientes();
   document.addEventListener('click',e=>{if(!e.target.closest('.ac-wrap'))document.getElementById('acList').style.display='none'});
 }
 
@@ -1123,7 +1611,12 @@ function renderTabla(){
       <td class="col-metodo" style="color:#8b949e;font-size:13px">${t.metodo||'—'}</td>
       <td class="col-estado">${badge(t.estado)}</td>
       <td class="col-obs" style="color:#7d8590;font-size:13px;max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${t.obs||''}">${t.obs||''}</td>
-      <td class="col-deuda" style="white-space:nowrap">${parseDeuda(t.deuda)>0?`<span class="deuda-badge"><i class="bi bi-exclamation-circle-fill"></i> ${fmt$(parseDeuda(t.deuda))}</span>`:''}</td>
+      <td class="col-deuda" style="white-space:nowrap">${(()=>{
+        const dv=parseDeuda(t.deuda);
+        if(dv>0) return `<span class="deuda-badge"><i class="bi bi-exclamation-circle-fill"></i> ${fmt$(dv)}</span>`;
+        if(dv<0) return `<span class="deuda-saldada"><i class="bi bi-check-circle-fill"></i> ${fmt$(Math.abs(dv))}</span>`;
+        return '';
+      })()}</td>
       <td class="col-wa" style="text-align:center">${wab}</td>
       <td class="col-acc" style="white-space:nowrap">
         <span class="mob-wa-acc">${wab}</span>
@@ -1145,7 +1638,6 @@ function goP(p){pg=p;renderTabla()}
 
 // ── Modal ────────────────────────────────────────────────────────────────────
 function openModal(t=null, rowId=null){
-  // rowId = número de fila en planilla (string) o null para nuevo turno
   const esEdicion = rowId !== null && rowId !== '-1' && rowId !== -1;
   document.getElementById('eIdx').value = esEdicion ? String(rowId) : '-1';
   document.getElementById('modalTit').innerHTML = esEdicion
@@ -1153,27 +1645,23 @@ function openModal(t=null, rowId=null){
     : '<i class="bi bi-calendar-plus me-2" style="color:#a78bfa"></i>Nuevo turno';
   const hoy = new Date();
   const fechaObj = t ? pF(t.fecha) : hoy;
-  document.getElementById('mFe').value = toISO(fechaObj || hoy);
+  document.getElementById('mFe').value  = toISO(fechaObj || hoy);
   document.getElementById('mHo').value  = t ? normHora(t.hora) : '';
   document.getElementById('mPa').value  = t ? t.pac : '';
   document.getElementById('mTe').value  = t ? t.tel : '';
   document.getElementById('mMo').value  = t ? t.monto : '';
   document.getElementById('mOb').value  = t ? t.obs : '';
-  document.getElementById('mDe').value  = t ? parseDeuda(t.deuda) : '';
   selV('mMt', t ? t.motivo : '');
   selV('mMe', t ? t.metodo : '');
   setEst(t ? t.estado : 'Confirmado');
-  mostrarDeudaCheck(t ? t.pac : null, esEdicion ? String(rowId) : null);
-  _montoOriginal = parseFloat(document.getElementById('mMo').value) || 0;
+  // Inicializar panel de deuda
+  initDeudaModal(t ? t.pac : null, esEdicion ? String(rowId) : null);
   document.getElementById('modalOverlay').classList.add('open');
 }
 function closeModal(){
   document.getElementById('modalOverlay').classList.remove('open');
-  _deudaChecked=false; _deudaAcumPac=0; _montoOriginal=0;
-  const wrap=document.getElementById('deudaCheckWrap');
-  const box=document.getElementById('deudaCheckbox');
-  if(wrap){wrap.classList.remove('checked','visible');}
-  if(box) box.innerHTML='';
+  _cobrarDeuda=false; _presenteDeuda=false; _parcial=false;
+  _deudaAcumPac=0; _montoOriginal=0;
 }
 function editT(i){
   const t = TURNOS[i];
@@ -1198,19 +1686,7 @@ function setEst(e){
     c.classList.remove('sel');
     if(c.classList.contains(cls))c.classList.add('sel');
   });
-  // Solo manejar visibilidad del checkbox — NO tocar mDe ni mMo
-  const salda = e === 'Pagado';
-  const wrap=document.getElementById('deudaCheckWrap');
-  const box=document.getElementById('deudaCheckbox');
-  if(salda){
-    // Ocultar checkbox (la deuda se fuerza a 0 al guardar)
-    if(wrap) wrap.classList.remove('visible','checked');
-    if(box)  box.innerHTML='';
-    _deudaChecked=false;
-  } else {
-    // Volvió a estado no-pagado: mostrar checkbox si hay deuda previa
-    if(wrap && _deudaAcumPac>0) wrap.classList.add('visible');
-  }
+  actualizarPaneles();
 }
 async function guardar(){
   const feISO=document.getElementById('mFe').value.trim();
@@ -1222,20 +1698,55 @@ async function guardar(){
   const fe=fF(feObj);
   if(!ho){toast('Seleccioná la hora','warn');return}
   if(!pa){toast('Ingresá el paciente','warn');return}
-  const _estado = document.getElementById('mEs').value||'Confirmado';
-  const _estadoSalda = _estado === 'Pagado';
-  const _deudaInput  = parseFloat(document.getElementById('mDe').value)||0;
-  const _montoFinal  = parseFloat(document.getElementById('mMo').value)||0;
-  // Capturar estado del checkbox ANTES de closeModal (que lo resetea)
-  const _cobrandoDeuda = _deudaChecked;
-  const _deudaAcumSnap = _deudaAcumPac;
+  const _estado     = document.getElementById('mEs').value||'Confirmado';
+  const _esPagado   = _estado === 'Pagado';
+  const _esPresente = _estado === 'Presente';
+  // Capturar todo ANTES de closeModal que resetea variables
+  const _cobSnap    = _cobrarDeuda;
+  const _presSnap   = _presenteDeuda;
+  const _parcSnap   = _parcial;
+  const _deudaSnap  = _deudaAcumPac;
+  const _parcMonto  = parseFloat(document.getElementById('mParcial')?.value)||0;
+  const _montoBase  = parseFloat(document.getElementById('mMo').value)||0;
+  const _deudaCalc  = parseFloat(document.getElementById('mDe').value)||0;
+
+  // ── CÁLCULO LIMPIO ─────────────────────────────────────────────
+  // _montoBase = precio de la consulta del día (lo que escribió el usuario)
+  // _deudaSnap = deuda acumulada de sesiones anteriores
+  // _parcMonto = lo que abonó en caso de pago parcial
+  //
+  // Regla: montoFinal = plata que ENTRA HOY (lo que se cobra)
+  //        deudaFinal = lo que QUEDA debiendo después de hoy
+  let montoFinal, deudaFinal;
+
+  if(_parcSnap){
+    // PAGO PARCIAL: abonó _parcMonto sobre (consulta + deuda previa si cobró)
+    const totalDebido = _montoBase + (_cobSnap ? _deudaSnap : 0);
+    montoFinal = Math.min(_parcMonto, totalDebido);
+    deudaFinal = Math.max(0, totalDebido - montoFinal);
+
+  } else if(_esPagado){
+    // PAGADO COMPLETO: cobró consulta + deuda previa (si tildó cobrar)
+    // montoFinal = consulta del día solamente (la deuda se salda por separado)
+    montoFinal = _montoBase;
+    deudaFinal = 0;
+
+  } else if(_esPresente && _presSnap){
+    // PRESENTE SIN PAGO: no cobró nada → monto=0, consulta pasa a deuda
+    montoFinal = 0;
+    deudaFinal = _montoBase;
+
+  } else {
+    // CONFIRMADO / NO PAGADO / AUSENTE: sin cambios
+    montoFinal = _montoBase;
+    deudaFinal = 0;
+  }
   const nu={fecha:fe,hora:ho,pac:pa,tel:document.getElementById('mTe').value.trim(),
     motivo:document.getElementById('mMt').value,
-    monto: _montoFinal,
+    monto: montoFinal,
     metodo:document.getElementById('mMe').value,estado:_estado,
     obs:document.getElementById('mOb').value.trim(),
-    // Si estado salda → deuda=0; si no → leer campo mDe
-    deuda: _estadoSalda ? 0 : _deudaInput};
+    deuda: deudaFinal};
   const eId=document.getElementById('eIdx').value;
   closeModal();
   showLoading(true);
@@ -1244,8 +1755,7 @@ async function guardar(){
     const res=await apiPost({action:'updateTurno',id:eId,turno:nu});
     if(res.ok){
       toast('Turno actualizado ✓','ok');
-      // Solo saldar previos si está Pagado/Presente (el propio turno queda excluido por eId)
-      if(_estadoSalda) await saldarDeudaPaciente(nu.pac, eId); // Solo Pagado salda
+      if(_esPagado && _cobSnap && _deudaSnap>0) await saldarDeudaPaciente(nu.pac, eId);
     } else { toast('Error al actualizar: '+(res.error||''),'warn') }
   } else {
     // ── NUEVO turno ──
@@ -1254,9 +1764,7 @@ async function guardar(){
       toast('Turno guardado ✓','ok');
       // Solo saldar previos si se tildó el checkbox de deuda anterior
       // (el turno nuevo no está en TURNOS todavía, así que no hay riesgo de pisarlo)
-      if(_cobrandoDeuda && _deudaAcumSnap > 0){
-        await saldarDeudaPaciente(nu.pac, null);
-      }
+      if(_esPagado && _cobSnap && _deudaSnap>0) await saldarDeudaPaciente(nu.pac, null);
     } else { toast('Error al guardar: '+(res.error||''),'warn') }
   }
   await cargarTurnos();
@@ -1291,17 +1799,16 @@ function acKey(e){
   else if(e.key==='Escape')document.getElementById('acList').style.display='none';
 }
 function elegir(p){
-  document.getElementById('mPa').value=p.nombre;
-  document.getElementById('mTe').value=p.tel||'';
-  if(p.monto)document.getElementById('mMo').value=p.monto;
-  selV('mMt',p.motivo);selV('mMe',p.metodo);
+  loadPacientes();
+  const pacData = PACIENTES.find(x=>x.nombre.trim().toLowerCase()===p.nombre.trim().toLowerCase());
+  document.getElementById('mPa').value = p.nombre;
+  document.getElementById('mTe').value = pacData?.tel || p.tel||'';
+  const monto = pacData?.monto || p.monto;
+  if(monto) document.getElementById('mMo').value = monto;
+  selV('mMt', pacData?.motivo || p.motivo);
+  selV('mMe', pacData?.metodo || p.metodo);
   document.getElementById('acList').style.display='none';
-  // Mostrar deuda acumulada del paciente elegido
-  const rowId=document.getElementById('eIdx').value;
-  const deudaAcum=TURNOS.filter(x=>x.pac.trim().toLowerCase()===p.nombre.trim().toLowerCase()
-    &&(+x.deuda||0)>0 && String(x.id)!==String(rowId))
-    .reduce((s,x)=>s+parseDeuda(x.deuda),0);
-  mostrarDeudaCheck(p.nombre, document.getElementById('eIdx').value);
+  initDeudaModal(p.nombre, document.getElementById('eIdx').value);
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -1425,7 +1932,7 @@ function calcSaldos(){
   const mapa={};
   TURNOS.forEach(t=>{
     const deuda=parseDeuda(t.deuda);
-    if(deuda<=0) return;
+    if(deuda<=0) return; // <=0 incluye negativas (saldadas)
     const key=t.pac.trim().toLowerCase();
     if(!mapa[key]) mapa[key]={nombre:t.pac.trim(),tel:t.tel||'',total:0};
     if(!mapa[key].tel&&t.tel) mapa[key].tel=t.tel;
