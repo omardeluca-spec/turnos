@@ -1727,8 +1727,9 @@ async function guardar(){
 
   } else if(_esPagado){
     // PAGADO COMPLETO: cobró consulta + deuda previa (si tildó cobrar)
-    // montoFinal = consulta del día solamente (la deuda se salda por separado)
-    montoFinal = _montoBase;
+    // montoFinal incluye la deuda anterior cobrada hoy para que el resumen
+    // de Cobros (Efectivo/Transferencia) refleje el efectivo real recibido
+    montoFinal = _montoBase + (_cobSnap ? _deudaSnap : 0);
     deudaFinal = 0;
 
   } else if(_esPresente && _presSnap){
@@ -1986,11 +1987,17 @@ function renderCobros(){
   const sab=new Date(lunes);sab.setDate(sab.getDate()+5);
   tSem=TURNOS.filter(t=>{const d=pF(t.fecha);return d&&d>=lunes&&d<=sab});
   const sem=(arr,est,campo)=>arr.filter(t=>!est||t.estado===est).reduce((s,t)=>s+(campo==='monto'?(+t.monto||0):1),0);
-  const sMon=t=>t.filter(t=>t.estado==='Pagado').reduce((s,t)=>s+(+t.monto||0),0);
+  // Un turno representa dinero efectivamente cobrado hoy si:
+  // - estado es 'Pagado' (pago completo), o
+  // - estado es 'Presente' con un pago parcial (se detecta porque queda deuda>0:
+  //   un "Presente" simple sin pago siempre tiene deuda=0, así que deuda>0 en
+  //   estado Presente solo ocurre cuando hubo un pago parcial registrado)
+  const fueCobrado=(t)=>t.estado==='Pagado' || (t.estado==='Presente' && parseDeuda(t.deuda)>0);
+  const sMon=t=>t.filter(fueCobrado).reduce((s,t)=>s+(+t.monto||0),0);
   const sPend=t=>t.filter(t=>t.estado==='No pagado').reduce((s,t)=>s+(+t.monto||0),0);
-  const sEfec=(arr)=>arr.filter(t=>t.estado==='Pagado'&&t.metodo==='Efectivo').reduce((s,t)=>s+(+t.monto||0),0);
-  const sTrans=(arr)=>arr.filter(t=>t.estado==='Pagado'&&t.metodo==='Transferencia').reduce((s,t)=>s+(+t.monto||0),0);
-  const sTicket=(arr)=>{const p=arr.filter(t=>t.estado==='Pagado');return p.length?Math.round(p.reduce((s,t)=>s+(+t.monto||0),0)/p.length):0};
+  const sEfec=(arr)=>arr.filter(t=>fueCobrado(t)&&t.metodo==='Efectivo').reduce((s,t)=>s+(+t.monto||0),0);
+  const sTrans=(arr)=>arr.filter(t=>fueCobrado(t)&&t.metodo==='Transferencia').reduce((s,t)=>s+(+t.monto||0),0);
+  const sTicket=(arr)=>{const p=arr.filter(fueCobrado);return p.length?Math.round(p.reduce((s,t)=>s+(+t.monto||0),0)/p.length):0};
   // Detalle días semana
   const DNOM=['Lunes','Martes','Miércoles','Jueves','Viernes','Sábado'];
   let diasHTML='';
