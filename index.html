@@ -1748,6 +1748,10 @@ async function guardar(){
     obs:document.getElementById('mOb').value.trim(),
     deuda: deudaFinal};
   const eId=document.getElementById('eIdx').value;
+  // Saldar deuda previa: cuando se tildó "cobrar deuda anterior" y el nuevo turno
+  // ya consolida ese saldo en su propio campo deuda (Pagado completo o Pago parcial).
+  // No aplica al caso "Presente sin pago", donde deudaFinal NO incluye la deuda previa.
+  const _debeSaldar = _cobSnap && _deudaSnap>0 && (_esPagado || _parcSnap);
   closeModal();
   showLoading(true);
   if(eId && eId!=='-1'){
@@ -1755,7 +1759,7 @@ async function guardar(){
     const res=await apiPost({action:'updateTurno',id:eId,turno:nu});
     if(res.ok){
       toast('Turno actualizado ✓','ok');
-      if(_esPagado && _cobSnap && _deudaSnap>0) await saldarDeudaPaciente(nu.pac, eId);
+      if(_debeSaldar) await saldarDeudaPaciente(nu.pac, eId);
     } else { toast('Error al actualizar: '+(res.error||''),'warn') }
   } else {
     // ── NUEVO turno ──
@@ -1764,7 +1768,7 @@ async function guardar(){
       toast('Turno guardado ✓','ok');
       // Solo saldar previos si se tildó el checkbox de deuda anterior
       // (el turno nuevo no está en TURNOS todavía, así que no hay riesgo de pisarlo)
-      if(_esPagado && _cobSnap && _deudaSnap>0) await saldarDeudaPaciente(nu.pac, null);
+      if(_debeSaldar) await saldarDeudaPaciente(nu.pac, null);
     } else { toast('Error al guardar: '+(res.error||''),'warn') }
   }
   await cargarTurnos();
