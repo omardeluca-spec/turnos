@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Ser y Sentir Consultoría</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🩷</text></svg>">
 <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/css/bootstrap.min.css" rel="stylesheet">
 <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
@@ -699,7 +700,7 @@ input[type="date"].inp::-webkit-calendar-picker-indicator:hover {
       <input class="inp srch-desktop" id="srch" placeholder="🔍  Buscar paciente..." style="width:220px" oninput="filtrar()">
       <select class="inp" id="fEst" onchange="filtrar()" style="width:150px">
         <option value="">Todos los estados</option>
-        <option>Pagado</option><option>No pagado</option>
+        <option>Pagado</option>
         <option>Ausente</option><option>Confirmado</option><option>Presente</option>
       </select>
       <select class="inp" id="fMes" onchange="filtrar()" style="width:160px">
@@ -730,7 +731,7 @@ input[type="date"].inp::-webkit-calendar-picker-indicator:hover {
   <div class="mob-filter-panel" id="mobFilterPanel">
     <select id="fEst-mob" onchange="document.getElementById('fEst').value=this.value;filtrar()">
       <option value="">Todos los estados</option>
-      <option>Pagado</option><option>No pagado</option>
+      <option>Pagado</option>
       <option>Ausente</option><option>Confirmado</option><option>Presente</option>
     </select>
     <select id="fMes-mob" onchange="document.getElementById('fMes').value=this.value;filtrar()">
@@ -866,12 +867,19 @@ input[type="date"].inp::-webkit-calendar-picker-indicator:hover {
       </div>
       <div style="font-size:13px;color:#7d8590;margin-left:8px">Mes:</div>
       <select class="inp" id="cMes" onchange="renderCobros()" style="width:130px">
-        <option value="4">Abril</option><option value="5" selected>Mayo</option>
-        <option value="6">Junio</option><option value="7">Julio</option>
-        <option value="8">Agosto</option>
+        <option value="1">Enero</option><option value="2">Febrero</option>
+        <option value="3">Marzo</option><option value="4">Abril</option>
+        <option value="5">Mayo</option><option value="6">Junio</option>
+        <option value="7">Julio</option><option value="8">Agosto</option>
+        <option value="9">Septiembre</option><option value="10">Octubre</option>
+        <option value="11">Noviembre</option><option value="12">Diciembre</option>
       </select>
       <select class="inp" id="cAnio" onchange="renderCobros()" style="width:90px">
-        <option value="2026" selected>2026</option><option value="2027">2027</option>
+        <option value="2024">2024</option>
+        <option value="2025">2025</option>
+        <option value="2026">2026</option>
+        <option value="2027">2027</option>
+        <option value="2028">2028</option>
       </select>
     </div>
   </div>
@@ -910,7 +918,7 @@ input[type="date"].inp::-webkit-calendar-picker-indicator:hover {
       <div id="mesTabs" style="display:flex;flex-wrap:wrap;gap:5px"></div>
     </div>
     <!-- KPIs mes seleccionado -->
-    <div style="display:grid;grid-template-columns:repeat(6,1fr);gap:12px;margin-bottom:24px" id="kpiMes"></div>
+    <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-bottom:24px" id="kpiMes"></div>
     <!-- Gráfico barras + tabla -->
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:24px">
       <div class="glass" style="padding:20px">
@@ -987,7 +995,6 @@ input[type="date"].inp::-webkit-calendar-picker-indicator:hover {
             <div class="chip chip-Confirmado" onclick="setEst('Confirmado')">📋 Confirmado</div>
             <div class="chip chip-Presente"   onclick="setEst('Presente')">👤 Presente</div>
             <div class="chip chip-Pagado"     onclick="setEst('Pagado')">✅ Pagado</div>
-            <div class="chip chip-Nopagado"   onclick="setEst('No pagado')">❌ No pagado</div>
             <div class="chip chip-Ausente"    onclick="setEst('Ausente')">🚫 Ausente</div>
           </div>
           <input type="hidden" id="mEs" value="Confirmado">
@@ -1155,7 +1162,7 @@ const EST_COL={Pagado:'#16a34a','No pagado':'#dc2626',Ausente:'#ea580c',Confirma
 const EST_CLS={Pagado:'est-Pagado','No pagado':'est-Nopagado',Ausente:'est-Ausente',Confirmado:'est-Confirmado',Presente:'est-Presente'};
 const CT_CLS ={Pagado:'ct-Pagado','No pagado':'ct-Nopagado',Ausente:'ct-Ausente',Confirmado:'ct-Confirmado',Presente:'ct-Presente'};
 
-let pg=1, PG=20, filt=[], semAct=lunDe(new Date()), cobSemAct=lunDe(new Date()), mesSel=4, acIdx=-1, acM=[];
+let pg=1, PG=40, filt=[], semAct=lunDe(new Date()), cobSemAct=lunDe(new Date()), mesSel=4, acIdx=-1, acM=[];
 
 // ── Helpers fecha ──────────────────────────────────────────────────────────
 function pF(s){if(!s)return null;const p=String(s).split('/');if(p.length!==3)return null;const d=new Date(+p[2],+p[1]-1,+p[0]);return isNaN(d)?null:d}
@@ -1727,9 +1734,8 @@ async function guardar(){
 
   } else if(_esPagado){
     // PAGADO COMPLETO: cobró consulta + deuda previa (si tildó cobrar)
-    // montoFinal incluye la deuda anterior cobrada hoy para que el resumen
-    // de Cobros (Efectivo/Transferencia) refleje el efectivo real recibido
-    montoFinal = _montoBase + (_cobSnap ? _deudaSnap : 0);
+    // montoFinal = consulta del día solamente (la deuda se salda por separado)
+    montoFinal = _montoBase;
     deudaFinal = 0;
 
   } else if(_esPresente && _presSnap){
@@ -1749,10 +1755,6 @@ async function guardar(){
     obs:document.getElementById('mOb').value.trim(),
     deuda: deudaFinal};
   const eId=document.getElementById('eIdx').value;
-  // Saldar deuda previa: cuando se tildó "cobrar deuda anterior" y el nuevo turno
-  // ya consolida ese saldo en su propio campo deuda (Pagado completo o Pago parcial).
-  // No aplica al caso "Presente sin pago", donde deudaFinal NO incluye la deuda previa.
-  const _debeSaldar = _cobSnap && _deudaSnap>0 && (_esPagado || _parcSnap);
   closeModal();
   showLoading(true);
   if(eId && eId!=='-1'){
@@ -1760,7 +1762,7 @@ async function guardar(){
     const res=await apiPost({action:'updateTurno',id:eId,turno:nu});
     if(res.ok){
       toast('Turno actualizado ✓','ok');
-      if(_debeSaldar) await saldarDeudaPaciente(nu.pac, eId);
+      if(_esPagado && _cobSnap && _deudaSnap>0) await saldarDeudaPaciente(nu.pac, eId);
     } else { toast('Error al actualizar: '+(res.error||''),'warn') }
   } else {
     // ── NUEVO turno ──
@@ -1769,7 +1771,7 @@ async function guardar(){
       toast('Turno guardado ✓','ok');
       // Solo saldar previos si se tildó el checkbox de deuda anterior
       // (el turno nuevo no está en TURNOS todavía, así que no hay riesgo de pisarlo)
-      if(_debeSaldar) await saldarDeudaPaciente(nu.pac, null);
+      if(_esPagado && _cobSnap && _deudaSnap>0) await saldarDeudaPaciente(nu.pac, null);
     } else { toast('Error al guardar: '+(res.error||''),'warn') }
   }
   await cargarTurnos();
@@ -1821,7 +1823,31 @@ function elegir(p){
 // ═══════════════════════════════════════════════════════════════════════════
 function semHoy(){semAct=lunDe(new Date());renderSemana()}
 function semNav(d){semAct=new Date(semAct);semAct.setDate(semAct.getDate()+d*7);renderSemana()}
-function cobHoy(){cobSemAct=lunDe(new Date());renderCobros()}
+function cobHoy(){
+  cobSemAct=lunDe(new Date());
+  // Setear mes y año actual
+  const hoy=new Date();
+  const cMes=document.getElementById('cMes');
+  const cAnio=document.getElementById('cAnio');
+  if(cMes){
+    cMes.value=String(hoy.getMonth()+1);
+    // Si el valor no pegó (opción no existe), forzar
+    if(cMes.value!==String(hoy.getMonth()+1)) cMes.selectedIndex=hoy.getMonth();
+  }
+  if(cAnio){
+    cAnio.value=String(hoy.getFullYear());
+    // Si el año no está en las opciones, seleccionar la más cercana
+    if(cAnio.value!==String(hoy.getFullYear())){
+      // Añadir el año si no existe
+      const opt=document.createElement('option');
+      opt.value=String(hoy.getFullYear());
+      opt.textContent=String(hoy.getFullYear());
+      cAnio.appendChild(opt);
+      cAnio.value=String(hoy.getFullYear());
+    }
+  }
+  renderCobros();
+}
 function cobNavSem(d){cobSemAct=new Date(cobSemAct);cobSemAct.setDate(cobSemAct.getDate()+d*7);renderCobros()}
 function renderSemana(){
   const dias=Array.from({length:6},(_,i)=>{const d=new Date(semAct);d.setDate(d.getDate()+i);return d});
@@ -1975,8 +2001,12 @@ function calcSaldos(){
 // COBROS
 // ═══════════════════════════════════════════════════════════════════════════
 function renderCobros(){
-  const mes=parseInt(document.getElementById('cMes').value);
-  const anio=parseInt(document.getElementById('cAnio').value);
+  const hoyR=new Date();
+  const mesRaw=parseInt(document.getElementById('cMes')?.value);
+  const anioRaw=parseInt(document.getElementById('cAnio')?.value);
+  // Fallback al mes/año actual si el selector no tiene valor válido
+  const mes = (mesRaw>=1&&mesRaw<=12) ? mesRaw : (hoyR.getMonth()+1);
+  const anio = (anioRaw>=2020) ? anioRaw : hoyR.getFullYear();
   const lunes=cobSemAct;
   // Actualizar display de rango
   const sabD=new Date(lunes);sabD.setDate(sabD.getDate()+5);
@@ -1987,17 +2017,11 @@ function renderCobros(){
   const sab=new Date(lunes);sab.setDate(sab.getDate()+5);
   tSem=TURNOS.filter(t=>{const d=pF(t.fecha);return d&&d>=lunes&&d<=sab});
   const sem=(arr,est,campo)=>arr.filter(t=>!est||t.estado===est).reduce((s,t)=>s+(campo==='monto'?(+t.monto||0):1),0);
-  // Un turno representa dinero efectivamente cobrado hoy si:
-  // - estado es 'Pagado' (pago completo), o
-  // - estado es 'Presente' con un pago parcial (se detecta porque queda deuda>0:
-  //   un "Presente" simple sin pago siempre tiene deuda=0, así que deuda>0 en
-  //   estado Presente solo ocurre cuando hubo un pago parcial registrado)
-  const fueCobrado=(t)=>t.estado==='Pagado' || (t.estado==='Presente' && parseDeuda(t.deuda)>0);
-  const sMon=t=>t.filter(fueCobrado).reduce((s,t)=>s+(+t.monto||0),0);
+  const sMon=t=>t.filter(t=>t.estado==='Pagado').reduce((s,t)=>s+(+t.monto||0),0);
   const sPend=t=>t.filter(t=>t.estado==='No pagado').reduce((s,t)=>s+(+t.monto||0),0);
-  const sEfec=(arr)=>arr.filter(t=>fueCobrado(t)&&t.metodo==='Efectivo').reduce((s,t)=>s+(+t.monto||0),0);
-  const sTrans=(arr)=>arr.filter(t=>fueCobrado(t)&&t.metodo==='Transferencia').reduce((s,t)=>s+(+t.monto||0),0);
-  const sTicket=(arr)=>{const p=arr.filter(fueCobrado);return p.length?Math.round(p.reduce((s,t)=>s+(+t.monto||0),0)/p.length):0};
+  const sEfec=(arr)=>arr.filter(t=>t.estado==='Pagado'&&t.metodo==='Efectivo').reduce((s,t)=>s+(+t.monto||0),0);
+  const sTrans=(arr)=>arr.filter(t=>t.estado==='Pagado'&&t.metodo==='Transferencia').reduce((s,t)=>s+(+t.monto||0),0);
+  const sTicket=(arr)=>{const p=arr.filter(t=>t.estado==='Pagado');return p.length?Math.round(p.reduce((s,t)=>s+(+t.monto||0),0)/p.length):0};
   // Detalle días semana
   const DNOM=['Lunes','Martes','Miércoles','Jueves','Viernes','Sábado'];
   let diasHTML='';
@@ -2011,18 +2035,26 @@ function renderCobros(){
     <div>
       <div class="cobros-section">
         <h4><i class="bi bi-calendar-week" style="color:#a78bfa"></i>Resumen Semanal</h4>
-        ${`
         <div class="cobros-row"><span class="lbl">💰 Total cobrado</span><span class="val verde">${fmt$(sMon(tSem))}</span></div>
         <div class="cobros-row"><span class="lbl">✅ Turnos pagados</span><span class="val">${sem(tSem,'Pagado','cnt')}</span></div>
-        <div class="cobros-row"><span class="lbl">❌ No pagados</span><span class="val">${sem(tSem,'No pagado','cnt')}</span></div>
         <div class="cobros-row"><span class="lbl">🚫 Ausentes</span><span class="val naranja">${sem(tSem,'Ausente','cnt')}</span></div>
-        <div class="cobros-row"><span class="lbl">⏳ Pendiente $</span><span class="val rojo">${fmt$(sPend(tSem))}</span></div>
         <div class="cobros-row"><span class="lbl">💳 Efectivo</span><span class="val">${fmt$(sEfec(tSem))}</span></div>
         <div class="cobros-row"><span class="lbl">💳 Transferencia</span><span class="val">${fmt$(sTrans(tSem))}</span></div>
-        <div style="border-top:1px solid #30363d;margin-top:14px;padding-top:12px">
+        <div style="border-top:1px solid #30363d;margin-top:10px;padding-top:10px;margin-bottom:2px">
+          <div style="font-size:11px;font-weight:700;color:#a78bfa;text-transform:uppercase;letter-spacing:.07em;margin-bottom:8px">📋 Previsión — Confirmados</div>
+          <div class="cobros-row">
+            <span class="lbl">Turnos confirmados</span>
+            <span class="val" style="color:#fef08a">${sem(tSem,'Confirmado','cnt')}</span>
+          </div>
+          <div class="cobros-row">
+            <span class="lbl">💰 Monto previsto</span>
+            <span class="val" style="color:#fef08a;font-size:16px">${fmt$(tSem.filter(t=>t.estado==='Confirmado').reduce((s,t)=>s+(+t.monto||0),0))}</span>
+          </div>
+        </div>
+        <div style="border-top:1px solid #30363d;margin-top:10px;padding-top:12px">
           <div style="font-size:11.5px;font-weight:700;color:#484f58;text-transform:uppercase;letter-spacing:.07em;margin-bottom:8px">Detalle por día</div>
           ${diasHTML}
-        </div>`}
+        </div>
       </div>
     </div>
     <div>
@@ -2030,9 +2062,7 @@ function renderCobros(){
         <h4><i class="bi bi-calendar-month" style="color:#a78bfa"></i>Resumen Mensual — ${MESES_F[mes-1]} ${anio}</h4>
         <div class="cobros-row"><span class="lbl">💰 Total cobrado</span><span class="val verde">${fmt$(sMon(tMes))}</span></div>
         <div class="cobros-row"><span class="lbl">✅ Turnos pagados</span><span class="val">${sem(tMes,'Pagado','cnt')}</span></div>
-        <div class="cobros-row"><span class="lbl">❌ No pagados</span><span class="val">${sem(tMes,'No pagado','cnt')}</span></div>
         <div class="cobros-row"><span class="lbl">🚫 Ausentes</span><span class="val naranja">${sem(tMes,'Ausente','cnt')}</span></div>
-        <div class="cobros-row"><span class="lbl">⏳ Pendiente $</span><span class="val rojo">${fmt$(sPend(tMes))}</span></div>
         <div class="cobros-row"><span class="lbl">📊 Ticket promedio</span><span class="val">${fmt$(sTicket(tMes))}</span></div>
         <div class="cobros-row"><span class="lbl">💳 Efectivo</span><span class="val">${fmt$(sEfec(tMes))}</span></div>
         <div class="cobros-row"><span class="lbl">💳 Transferencia</span><span class="val">${fmt$(sTrans(tMes))}</span></div>
@@ -2046,13 +2076,26 @@ function renderCobros(){
 // ANÁLISIS
 // ═══════════════════════════════════════════════════════════════════════════
 function initAnalisis(){
+  // Setear año actual en el selector
+  const aAnio=document.getElementById('aAnio');
+  if(aAnio){
+    const anioActual=String(new Date().getFullYear());
+    // Agregar el año si no existe en las opciones
+    if(![...aAnio.options].some(o=>o.value===anioActual)){
+      const opt=document.createElement('option');
+      opt.value=anioActual; opt.textContent=anioActual;
+      aAnio.appendChild(opt);
+    }
+    aAnio.value=anioActual;
+  }
   const tabs=document.getElementById('mesTabs');
   MESES_C.forEach((m,i)=>{
-    const b=document.createElement('button');b.className='mes-tab'+(i===4?' active':'');
+    const b=document.createElement('button');b.className='mes-tab'+(i===new Date().getMonth()?' active':'');
     b.textContent=m;b.onclick=()=>{mesSel=i;document.querySelectorAll('.mes-tab').forEach(t=>t.classList.remove('active'));b.classList.add('active');renderAnalisis()};
     tabs.appendChild(b);
   });
-  mesSel=4;renderAnalisis();
+  mesSel=new Date().getMonth(); // mes actual
+  renderAnalisis();
 }
 function renderAnalisis(){
   const anio=parseInt(document.getElementById('aAnio').value)||2026;
@@ -2079,7 +2122,6 @@ function renderAnalisis(){
     <div class="stat-card"><div class="stat-val" style="font-size:18px">${fmt$(cobM)}</div><div class="stat-lbl">💰 Cobrado</div></div>
     <div class="stat-card"><div class="stat-val">${tM.length}</div><div class="stat-lbl">📋 Turnos</div></div>
     <div class="stat-card"><div class="stat-val">${pagM}</div><div class="stat-lbl">✅ Pagados</div></div>
-    <div class="stat-card"><div class="stat-val">${npM}</div><div class="stat-lbl">❌ No pagados</div></div>
     <div class="stat-card"><div class="stat-val">${ausM}</div><div class="stat-lbl">🚫 Ausentes</div></div>
     <div class="stat-card"><div class="stat-val">${tasaM}%</div><div class="stat-lbl">📊 Tasa cobro</div></div>`;
   // Gráfico barras
