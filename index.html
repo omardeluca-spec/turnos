@@ -202,8 +202,22 @@ select.inp option{background:#21262d}
   #main { margin-left: 0 !important; }
   /* Padding inferior en TODOS los apartados para no quedar tapado por bottom nav */
   .page-content { padding: 12px 12px 96px !important; }
-  /* El wrapper de paginación también necesita padding para ser visible */
-  .pag-wrap { padding-bottom: 8px !important; }
+  /* Paginador siempre visible en mobile */
+  .pag-wrap {
+    padding: 12px 12px 12px !important;
+    display: flex !important;
+    flex-wrap: wrap !important;
+    gap: 8px !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    position: sticky !important;
+    bottom: 72px !important;
+    background: #161b22 !important;
+    border-top: 1px solid #30363d !important;
+    z-index: 10 !important;
+  }
+  #pgBtns { flex-wrap: wrap !important; gap: 6px !important; }
+  .pag-btn { width: 36px !important; height: 36px !important; font-size: 14px !important; }
   /* Semana y Cobros también tienen contenido debajo */
   #calGrid { padding-bottom: 8px !important; }
   .cobros-grid { padding-bottom: 8px !important; }
@@ -259,9 +273,17 @@ select.inp option{background:#21262d}
   .col-deuda  { grid-area: deuda !important; font-size:13px !important; }
   .col-acc    { grid-area: acc !important; border-top: 1px solid #21262d !important; padding-top: 8px !important; margin-top: 2px !important; gap: 8px !important; flex-wrap: wrap !important; }
 
+  /* Análisis: oculto en mobile */
+  #sec-analisis { display: none !important; }
   /* Cobros: 1 columna */
   .cobros-grid { grid-template-columns: 1fr !important; }
 
+  /* Cobros header compacto */
+  #sec-cobros .page-header { flex-wrap: wrap !important; gap: 8px !important; padding: 12px 12px 8px !important; }
+  .date-nav { gap: 6px !important; }
+  .date-rng-lbl { font-size: 12px !important; min-width: unset !important; }
+  .cobros-section { padding: 14px !important; }
+  .cobros-section h4 { font-size: 11px !important; }
   /* Análisis KPIs: 2 columnas */
   #kpiGlobal { grid-template-columns: 1fr 1fr !important; }
   #kpiMes    { grid-template-columns: 1fr 1fr 1fr !important; }
@@ -269,7 +291,12 @@ select.inp option{background:#21262d}
   /* Análisis gráfico: 1 columna */
   .glass-grid-2 { grid-template-columns: 1fr !important; }
 
-  /* Semana: scroll horizontal ya funciona */
+  /* Semana — ajustes mobile */
+  #sec-semana .page-header { flex-wrap: wrap !important; gap: 8px !important; }
+  .semana-rng { font-size: 12px !important; }
+  .cal-nav-btn { width: 30px !important; height: 30px !important; }
+  #calGrid { overflow-x: auto !important; -webkit-overflow-scrolling: touch !important; }
+  .cal-grid { min-width: 480px !important; }
 
   /* Modal: ocupa toda la pantalla en móvil */
   .modal-box {
@@ -287,6 +314,11 @@ select.inp option{background:#21262d}
   /* Paginación más grande */
   .pag-btn { width: 38px !important; height: 38px !important; font-size: 14px !important; }
 
+  /* Pacientes mobile */
+  #sec-pacientes .page-header { flex-wrap: wrap !important; gap: 8px !important; }
+  #srchPac { width: 100% !important; }
+  .pac-grid { grid-template-columns: 1fr !important; }
+  .pac-card { padding: 12px !important; }
   /* Cal nav compacto */
   .semana-rng { font-size: 13px !important; }
 
@@ -617,9 +649,108 @@ input[type="date"].inp::-webkit-calendar-picker-indicator:hover {
   background:#161b22;border:1px solid #30363d;border-radius:16px;
   width:480px;max-width:95vw;max-height:90vh;overflow-y:auto;
 }
+
+/* ── LOGIN / LOCK SCREEN ─────────────────────────────────── */
+#lockScreen {
+  position: fixed; inset: 0;
+  background: #0d1117;
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 0;
+}
+.lock-box {
+  background: #161b22;
+  border: 1px solid #30363d;
+  border-radius: 20px;
+  padding: 40px 36px 32px;
+  width: 360px;
+  max-width: 92vw;
+  text-align: center;
+  box-shadow: 0 24px 80px rgba(0,0,0,.6);
+}
+.lock-logo {
+  font-size: 52px;
+  margin-bottom: 12px;
+  display: block;
+  animation: pulse 2s ease-in-out infinite;
+}
+@keyframes pulse {
+  0%,100%{transform:scale(1)} 50%{transform:scale(1.08)}
+}
+.lock-title {
+  font-size: 22px; font-weight: 800;
+  color: #f0f6fc; margin-bottom: 4px;
+  font-family: 'Inter', sans-serif;
+}
+.lock-sub {
+  font-size: 13px; color: #7d8590;
+  margin-bottom: 28px;
+  font-family: 'Inter', sans-serif;
+}
+.lock-label {
+  font-size: 11px; font-weight: 700;
+  color: #a78bfa; text-transform: uppercase;
+  letter-spacing: .08em; text-align: left;
+  display: block; margin-bottom: 6px;
+  font-family: 'Inter', sans-serif;
+}
+.lock-input {
+  width: 100%; background: #21262d;
+  border: 1px solid #30363d; border-radius: 10px;
+  padding: 12px 16px; color: #e6edf3;
+  font-size: 18px; font-family: 'Inter', sans-serif;
+  outline: none; text-align: center;
+  letter-spacing: 4px; margin-bottom: 16px;
+  transition: border-color .2s;
+}
+.lock-input:focus { border-color: #7c3aed; }
+.lock-input.error { border-color: #f87171; animation: shake .3s ease; }
+@keyframes shake {
+  0%,100%{transform:translateX(0)} 25%{transform:translateX(-6px)} 75%{transform:translateX(6px)}
+}
+.lock-btn {
+  width: 100%; background: #7c3aed;
+  border: none; border-radius: 10px;
+  padding: 13px; color: #fff;
+  font-size: 15px; font-weight: 700;
+  font-family: 'Inter', sans-serif;
+  cursor: pointer; transition: all .2s;
+}
+.lock-btn:hover { background: #6d28d9; transform: translateY(-1px); }
+.lock-error {
+  font-size: 12px; color: #f87171;
+  margin-top: 10px; min-height: 18px;
+  font-family: 'Inter', sans-serif;
+}
+.lock-footer {
+  margin-top: 20px; font-size: 11px;
+  color: #484f58; font-family: 'Inter', sans-serif;
+}
 </style>
 </head>
 <body>
+
+
+<!-- LOCK SCREEN -->
+<div id="lockScreen">
+  <div class="lock-box">
+    <span class="lock-logo">🩷</span>
+    <div class="lock-title">Ser y Sentir</div>
+    <div class="lock-sub">Consultoría · Sistema de Turnos</div>
+    <label class="lock-label" for="lockPin">Contraseña</label>
+    <input class="lock-input" type="password" id="lockPin"
+      placeholder="••••••••" maxlength="20"
+      onkeydown="if(event.key==='Enter')checkPin()">
+    <button class="lock-btn" onclick="checkPin()">
+      <i class="bi bi-unlock-fill"></i> Ingresar
+    </button>
+    <div class="lock-error" id="lockError"></div>
+    <div class="lock-footer">Acceso privado · Ser y Sentir Consultoría</div>
+  </div>
+</div>
 
 <!-- SIDEBAR -->
 <nav id="sidebar">
@@ -667,11 +798,7 @@ input[type="date"].inp::-webkit-calendar-picker-indicator:hover {
     <i class="bi bi-calendar3"></i>
     <span>Turnos</span>
   </div>
-  <div class="bn-item" id="bn-pacientes" onclick="goTo('pacientes')">
-    <i class="bi bi-people-fill"></i>
-    <span>Pacientes</span>
-  </div>
-  <div class="bn-item" id="bn-semana" onclick="goTo('semana')" style="display:none">
+  <div class="bn-item" id="bn-semana" onclick="goTo('semana')">
     <i class="bi bi-grid-3x3-gap"></i>
     <span>Semana</span>
   </div>
@@ -682,9 +809,9 @@ input[type="date"].inp::-webkit-calendar-picker-indicator:hover {
     <i class="bi bi-cash-stack"></i>
     <span>Cobros</span>
   </div>
-  <div class="bn-item" id="bn-analisis" onclick="goTo('analisis')">
-    <i class="bi bi-bar-chart-line"></i>
-    <span>Análisis</span>
+  <div class="bn-item" id="bn-pacientes" onclick="goTo('pacientes')">
+    <i class="bi bi-people-fill"></i>
+    <span>Pacientes</span>
   </div>
 </nav>
 
@@ -1199,7 +1326,7 @@ function goTo(id){
   const navEl=document.querySelector(`[onclick="goTo('${id}')"]`);
   if(navEl) navEl.classList.add('active');
   // Bottom nav mobile
-  ['turnos','semana','cobros','analisis'].forEach(s=>{
+  ['turnos','semana','cobros','pacientes'].forEach(s=>{
     const el=document.getElementById('bn-'+s);
     if(el) el.classList.toggle('active', s===id);
   });
@@ -1550,9 +1677,57 @@ function importarPacientesFromTurnos(){
 }
 
 
+// ══════════════════════════════════════════════════════════════════
+// LOCK SCREEN — contraseña + auto-lock 5 min
+// ══════════════════════════════════════════════════════════════════
+const LOCK_PASS = 'Titi2026';
+const LOCK_TIMEOUT = 5 * 60 * 1000; // 5 minutos en ms
+let lockTimer = null;
+
+function checkPin(){
+  const val = document.getElementById('lockPin').value;
+  const err = document.getElementById('lockError');
+  const inp = document.getElementById('lockPin');
+  if(val === LOCK_PASS){
+    document.getElementById('lockScreen').style.display = 'none';
+    err.textContent = '';
+    inp.value = '';
+    resetLockTimer();
+    // Cargar datos si es el primer ingreso
+    if(!TURNOS.length) cargarTurnos();
+  } else {
+    inp.classList.add('error');
+    err.textContent = 'Contraseña incorrecta. Intentá de nuevo.';
+    inp.value = '';
+    setTimeout(()=>inp.classList.remove('error'), 400);
+  }
+}
+
+function lockApp(){
+  document.getElementById('lockScreen').style.display = 'flex';
+  document.getElementById('lockPin').value = '';
+  document.getElementById('lockError').textContent = '';
+  clearTimeout(lockTimer);
+}
+
+function resetLockTimer(){
+  clearTimeout(lockTimer);
+  lockTimer = setTimeout(lockApp, LOCK_TIMEOUT);
+}
+
+// Resetear timer con cualquier interacción
+['click','keydown','touchstart','scroll'].forEach(ev=>{
+  document.addEventListener(ev, ()=>{
+    if(document.getElementById('lockScreen').style.display==='none'){
+      resetLockTimer();
+    }
+  }, {passive: true});
+});
+
+
 function init(){
   // Cargar desde API
-  cargarTurnos();
+  // cargarTurnos() se llama al ingresar la contraseña
   // Horas
   const sh=document.getElementById('mHo');
   HORARIOS.forEach(h=>sh.innerHTML+=`<option value="${h}">${h}</option>`);
